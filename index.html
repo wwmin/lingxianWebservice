@@ -285,14 +285,14 @@
                                             "ZDMS": json[i].ZDMS,
                                             "XSZT": json[i].XSZT
                                         };
-                                        if ((json[i].ZDID < 500 && json[i].ZDID > 0) || json[i].ZDID > 1200) {
+                                        if ((json[i].ZDID < 500 && json[i].ZDID > 0) || json[i].ZDID > 600) {
                                             symbol = symbol01;
                                             zdid_i += 1;
                                             var loc = new Point(json[i].ZBX, json[i].ZBY, new SpatialReference(map.spatialReference));
                                             var graphic = new Graphic(loc, symbol, attr, infoTemplate);
                                             //map.graphics.add(graphic);
                                             sbLayer.add(graphic);
-                                        } else if (json[i].ZDID >= 500 && json[i].ZDID <= 1200) {
+                                        } else if (json[i].ZDID >= 500 && json[i].ZDID <= 600) {
                                             symbol = symbol02;
                                             zdid_j += 1;
                                             var loc = new Point(json[i].ZBX, json[i].ZBY, new SpatialReference(map.spatialReference));
