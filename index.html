@@ -5,6 +5,7 @@
     <title>陵县供水管网</title>
     <link rel="shortcut icon" href="images/favicon.ico" />
     <link rel="stylesheet" href="http://111.30.72.13/arcgis_js_api/library/3.9/3.9/js/dojo/dijit/themes/claro/claro.css" />
+    <link rel="stylesheet" href="http://111.30.72.13/arcgis_js_api/library/3.9/3.9/js/dojo/dojox/layout/resources/FloatingPane.css" />
     <link rel="stylesheet" href="http://111.30.72.13/arcgis_js_api/library/3.9/3.9/js/esri/css/esri.css" />
     <link rel="stylesheet" type="text/css" href="css/sample.css" />
     <!-- HTML5 Shim 和 Respond.js 用于让 IE8 支持 HTML5元素和媒体查询 -->
@@ -172,6 +173,7 @@
     <script src="js/json2.js"></script>
     <!-- 配置dojo环境，parseOnLoad为true 且要此句要放在 v3.3 init.js前面-->
     <script type="text/javascript">var djConfig = { parseOnLoad: true };</script>
+    <script src="http://111.30.72.13/arcgis_js_api/library/3.9/3.9/js/dojo/dojo/dnd/Moveable.js"></script>
     <script src="http://111.30.72.13/arcgis_js_api/library/3.9/3.9/init.js"></script>
     <script type="text/javascript" src="js/InfoTip.js"></script>
     <script type="text/javascript">
@@ -180,9 +182,9 @@
         var map;
         var iTip;  //鼠标悬停变量
         var zdid_i = 0,zdid_j= 0,zdid_k= 0,zdid_l=0;  //水表点，水质点，其它点个数全局变量
-        require(["dojo/parser","dijit/registry", "dojo/on","dojo/dom", "esri/geometry/Extent", "esri/Color", "esri/map", "esri/layers/ArcGISTiledMapServiceLayer",
+        require(["dojo/parser","dijit/registry", "dojo/on","dojo/dom","dojo/dnd/Moveable", "esri/geometry/Extent", "esri/Color", "esri/map", "esri/layers/ArcGISTiledMapServiceLayer",
                     "esri/geometry/Point", "esri/SpatialReference", "esri/graphic", "esri/layers/GraphicsLayer", "esri/InfoTemplate", "esri/symbols/SimpleMarkerSymbol", "esri/symbols/SimpleLineSymbol", "dojo/store/JsonRest", "esri/dijit/HomeButton", "esri/dijit/OverviewMap", "esri/dijit/Scalebar", "dojo/domReady!"],
-                function (parser, registry, on,dom,Extent, Color, Map, ArcGISTiledMapServiceLayer, Point, SpatialReference, Graphic,GraphicsLayer, InfoTemplate, SimpleMarkerSymbol, SimpleLineSymbol, JsonRest, HomeButton, OverviewMap, Scalebar) {
+                function (parser, registry, on,dom,Moveable,Extent, Color, Map, ArcGISTiledMapServiceLayer, Point, SpatialReference, Graphic,GraphicsLayer, InfoTemplate, SimpleMarkerSymbol, SimpleLineSymbol, JsonRest, HomeButton, OverviewMap, Scalebar) {
                     //parser.parse(); //与djConfig = { parseOnLoad: true } 重复，目前可以不用设置此项，以后是否会需要，在看
                     var extent = new Extent({
                         "xmin": 456188, "ymin": 4130176,
@@ -243,7 +245,7 @@
                     symbolAlarm= new esri.symbol.PictureMarkerSymbol("images/alarm.png",20,20);
 
                     map.on("load", addPointGraphics);
-                    map.on("load",addAlarmPointGraphics);
+                    //map.on("load",addAlarmPointGraphics);  //初始化地图时加载报警点  --报警点为动态点，应该改为手动点击按钮实现加载
                     // close the info window when the map is clicked
                     map.on("click", cleanUp);
                     // close the info window when esc is pressed
@@ -407,8 +409,6 @@
                             console.log("隐藏水质点层");
                         };
                     });
-
-
                     //绑定提示框
                     function g_onMouseClick(evt) {
                         if (evt.graphic.attributes) {
@@ -509,19 +509,65 @@
                         //map.centerAndZoom(location, level);   //将点平移到map正中 并 缩放到制定map级别
                         map.centerAt(location);  //将点平移到map正中
                     }
+
+
                     //加载报警历史点数据模块  需要dojo/on 和dojo/dom 两个模块
                      on(dom.byId('btnAlarmHistory'), "click", function () {
                          //alert("添加Alarm 窗口"+"\n\n"+"后续需要添加alarm点数据的接口");
-                     /*if (alarmLayer.visible) {
-                         alarmLayer.hide();
-                     } else {
-                         alarmLayer.show();
-                     }*/
-                         alarmLayer.toggle();
-
+                         /*if (alarmLayer.visible) {
+                          alarmLayer.hide();
+                          } else {
+                          alarmLayer.show();
+                          }*/
+                         addAlarmPointGraphics();  //获取报警点的时间为 点击该报警按钮
+                         //alarmLayer.toggle();
+                         makeAlarmBox();
                      });
                 }
         );
+
+        //弹出报警点数据对话框
+        function makeAlarmBox(){
+            require(["dojo/request", "dojo/_base/window", "dojo/dom-style", "dojox/layout/FloatingPane"], function (request, win, style, FloatingPane) {
+                var floaterDiv = document.createElement("div");
+                win.body().appendChild(floaterDiv);
+                floaterDiv.appendChild(document.createElement("br"));
+                var textarea = document.createElement("div");
+                textarea.innerHTML = "加载...";
+
+                floaterDiv.appendChild(textarea);
+                var tmp = new FloatingPane({
+                    title: "<b>陵县GIS报警监测记录</b>",
+                    id: "aboutBox",
+                    closeable: true,
+                    resizable: true,
+                    dockable: false,
+                    resizeAxis: 'xy'
+                }, floaterDiv);
+                tmp.startup();
+
+                tmp.resize({
+                    w: 350,
+                    h: 200
+                });
+
+                style.set(tmp.domNode, "top", "100px");
+                style.set(tmp.domNode, "left", "100px");
+                style.set(tmp.domNode, "z-index", "500");
+
+                tmp.show();
+
+                request("about.html").then(function (response) {
+                            textarea.innerHTML = response;
+                        },
+                        function (response) {
+                            alert("出错，原因是" + response);
+                            textarea.innerHTML = '不能找到指定的HTML ';
+                        });
+
+                tmp.bringToTop();
+            });
+        }
     </script>
 </head>
 <body class="claro">
