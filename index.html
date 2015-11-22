@@ -246,7 +246,7 @@
                     symbolAlarm= new esri.symbol.PictureMarkerSymbol("images/alarm.png",20,20);
 
                     map.on("load", addPointGraphics);
-                    //map.on("load",addAlarmPointGraphics);  //初始化地图时加载报警点  --报警点为动态点，应该改为手动点击按钮实现加载
+                    map.on("load",addAlarmPointGraphics);  //初始化地图时加载报警点  --报警点为动态点，应该改为手动点击按钮实现加载
                     // close the info window when the map is clicked
                     map.on("click", cleanUp);
                     // close the info window when esc is pressed
@@ -331,8 +331,9 @@
                         szLayer.on("mouse-out", g_onMouseOutHandler);
                     }
                     //将报警点加入地图中
+                    var initAlarmLayer=0;
                     function addAlarmPointGraphics() {
-
+                        initAlarmLayer+=1;
                         $.ajax({
                             type: "GET",
                             url: "http://222.133.60.178:809/getAllAlarm.ashx",//http://222.133.60.178:809/
@@ -368,10 +369,14 @@
                                      map.graphics.add(graphic);*/
                                     console.log("报警点信息："+"ZBX:"+json[i].ZBX+" | ZBY:"+json[i].ZBY+" | ZDBH:"+json[i].ZDBH,"| ZDID:"+json[i].ZDID," | ZDMS:"+ json[i].ZDMS," | XSZT:"+ json[i].XSZT+"\n");
                                     //console.log(json[i]+"\n");
-                                    alarmString += "报警点信息："+"ZBX:"+json[i].ZBX+" | ZBY:"+json[i].ZBY+" | ZDBH:"+json[i].ZDBH,"| ZDID:"+json[i].ZDID," | ZDMS:"+ json[i].ZDMS," | XSZT:"+ json[i].XSZT+"\n\n";
+                                    alarmString += "报警点信息："+"ZBX:"+json[i].ZBX+" | ZBY:"+json[i].ZBY+" | ZDBH:"+json[i].ZDBH,"| ZDID:"+json[i].ZDID," | ZDMS:"+ json[i].ZDMS," | XSZT:"+ json[i].XSZT+"<br> <br>";
                                 }
                                 //alarmString += "报警点信息："+"ZBX:"+json[i].ZBX+" | ZBY:"+json[i].ZBY+" | ZDBH:"+json[i].ZDBH,"| ZDID:"+json[i].ZDID," | ZDMS:"+ json[i].ZDMS," | XSZT:"+ json[i].XSZT+"\n\n";
                                 //alarmLayer.hide();
+                                if (initAlarmLayer==1){
+                                    alarmLayer.hide();
+                                }
+
                             },
                             error: function (ex) {
                                 //alert(ex);
@@ -527,6 +532,11 @@
                          addAlarmPointGraphics();  //获取报警点的时间为 点击该报警按钮
                          //alarmLayer.toggle();
                          makeAlarmBox();
+                         //隐藏水表点水质监测点层
+                         sbLayer.hide();
+                         szLayer.hidden();
+                         cleanUp();
+                         RemoveGraphics();
                      });
                 }
         );
@@ -571,6 +581,7 @@
                         });*/
                 //直接获取全局变量当数据源
                 textarea.innerHTML=alarmString;
+
                 tmp.bringToTop();
             });
         }
@@ -614,5 +625,6 @@
             window.open("gif.html","","dialogWidth=840px;dialogHeight=auto;status=no;help=no;");
         }
     </script>
+
 </body>
 </html>
