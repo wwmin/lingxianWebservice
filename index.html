@@ -333,7 +333,7 @@
                     //将报警点加入地图中
                     var initAlarmLayer=0;
                     function addAlarmPointGraphics() {
-                        initAlarmLayer+=1;
+
                         $.ajax({
                             type: "GET",
                             url: "http://222.133.60.178:809/getAllAlarm.ashx",//http://222.133.60.178:809/
@@ -348,6 +348,7 @@
                                     alert(response);
                                     return false;
                                 }
+                                initAlarmLayer+=1;
                                 alarmString="";
                                 for (var i = 0, l = json.length; i < l; i++) {
                                     if(json[i].ZBX > 400000) {
@@ -375,12 +376,14 @@
                                 //alarmLayer.hide();
                                 if (initAlarmLayer==1){
                                     alarmLayer.hide();
+                                }else{
+                                    alarmLayer.show();
                                 }
 
                             },
                             error: function (ex) {
                                 //alert(ex);
-                                alert('fail');
+                                //alert('fail');  //有个问题，第一次ajax能正常显示，第二次以后就会出错，可能是没有消除ajax连接的原因？
                                 //console.log(ex);
                             }
                         });
@@ -485,7 +488,7 @@
                             },
                             error: function (ex) {
                                 //alert(ex);
-                                alert('fail');
+                                //alert('fail');
                                 console.log(ex + "   mainstate: " + mainstate);
                             }
                         });
@@ -524,17 +527,22 @@
                     //加载报警历史点数据模块  需要dojo/on 和dojo/dom 两个模块
                      on(dom.byId('btnAlarmHistory'), "click", function () {
                          //alert("添加Alarm 窗口"+"\n\n"+"后续需要添加alarm点数据的接口");
-                         /*if (alarmLayer.visible) {
-                          alarmLayer.hide();
+                         if (alarmLayer.visible) {
+                            alarmLayer.hide();
+                             alarmLayer.clear();
                           } else {
-                          alarmLayer.show();
-                          }*/
-                         addAlarmPointGraphics();  //获取报警点的时间为 点击该报警按钮
+                             addAlarmPointGraphics();  //获取报警点的时间为 点击该报警按钮
+                             sbLayer.hide();
+                             szLayer.hide();
+                             list_item_1.checked=false;
+                             list_item_2.checked=false;
+                          }
+
                          //alarmLayer.toggle();
                          makeAlarmBox();
                          //隐藏水表点水质监测点层
-                         sbLayer.hide();
-                         szLayer.hidden();
+
+
                          cleanUp();
                          RemoveGraphics();
                      });
@@ -562,8 +570,8 @@
                 tmp.startup();
 
                 tmp.resize({
-                    w: 350,
-                    h: 500
+                    w: 300,
+                    h: 400
                 });
 
                 style.set(tmp.domNode, "top", "100px");
