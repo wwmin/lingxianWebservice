@@ -182,6 +182,7 @@
         var map;
         var iTip;  //鼠标悬停变量
         var zdid_i = 0,zdid_j= 0,zdid_k= 0,zdid_l=0;  //水表点，水质点，其它点个数全局变量
+        var alarmString="";
         require(["dojo/parser","dijit/registry", "dojo/on","dojo/dom","dojo/dnd/Moveable", "esri/geometry/Extent", "esri/Color", "esri/map", "esri/layers/ArcGISTiledMapServiceLayer",
                     "esri/geometry/Point", "esri/SpatialReference", "esri/graphic", "esri/layers/GraphicsLayer", "esri/InfoTemplate", "esri/symbols/SimpleMarkerSymbol", "esri/symbols/SimpleLineSymbol", "dojo/store/JsonRest", "esri/dijit/HomeButton", "esri/dijit/OverviewMap", "esri/dijit/Scalebar", "dojo/domReady!"],
                 function (parser, registry, on,dom,Moveable,Extent, Color, Map, ArcGISTiledMapServiceLayer, Point, SpatialReference, Graphic,GraphicsLayer, InfoTemplate, SimpleMarkerSymbol, SimpleLineSymbol, JsonRest, HomeButton, OverviewMap, Scalebar) {
@@ -331,6 +332,7 @@
                     }
                     //将报警点加入地图中
                     function addAlarmPointGraphics() {
+
                         $.ajax({
                             type: "GET",
                             url: "http://222.133.60.178:809/getAllAlarm.ashx",//http://222.133.60.178:809/
@@ -345,6 +347,7 @@
                                     alert(response);
                                     return false;
                                 }
+                                alarmString="";
                                 for (var i = 0, l = json.length; i < l; i++) {
                                     if(json[i].ZBX > 400000) {
                                         var attr = {
@@ -364,9 +367,11 @@
                                      var graphic = new Graphic(loc, symbol, attr, infoTemplate);
                                      map.graphics.add(graphic);*/
                                     console.log("报警点信息："+"ZBX:"+json[i].ZBX+" | ZBY:"+json[i].ZBY+" | ZDBH:"+json[i].ZDBH,"| ZDID:"+json[i].ZDID," | ZDMS:"+ json[i].ZDMS," | XSZT:"+ json[i].XSZT+"\n");
-                                    console.log(json[i]+"\n");
+                                    //console.log(json[i]+"\n");
+                                    alarmString += "报警点信息："+"ZBX:"+json[i].ZBX+" | ZBY:"+json[i].ZBY+" | ZDBH:"+json[i].ZDBH,"| ZDID:"+json[i].ZDID," | ZDMS:"+ json[i].ZDMS," | XSZT:"+ json[i].XSZT+"\n\n";
                                 }
-                                alarmLayer.hide();
+                                //alarmString += "报警点信息："+"ZBX:"+json[i].ZBX+" | ZBY:"+json[i].ZBY+" | ZDBH:"+json[i].ZDBH,"| ZDID:"+json[i].ZDID," | ZDMS:"+ json[i].ZDMS," | XSZT:"+ json[i].XSZT+"\n\n";
+                                //alarmLayer.hide();
                             },
                             error: function (ex) {
                                 //alert(ex);
@@ -548,7 +553,7 @@
 
                 tmp.resize({
                     w: 350,
-                    h: 200
+                    h: 500
                 });
 
                 style.set(tmp.domNode, "top", "100px");
@@ -556,15 +561,16 @@
                 style.set(tmp.domNode, "z-index", "500");
 
                 tmp.show();
-
-                request("about.html").then(function (response) {
+                //请求数据源
+                /*request("about.html").then(function (response) {
                             textarea.innerHTML = response;
                         },
                         function (response) {
-                            alert("出错，原因是" + response);
+                            //alert("出错，原因是" + response);
                             textarea.innerHTML = '不能找到指定的HTML ';
-                        });
-
+                        });*/
+                //直接获取全局变量当数据源
+                textarea.innerHTML=alarmString;
                 tmp.bringToTop();
             });
         }
