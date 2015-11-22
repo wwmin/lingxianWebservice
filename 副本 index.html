@@ -1,0 +1,162 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>陵县供水管网</title>
+    <link rel="stylesheet" href="http://111.30.72.13/arcgis_js_api/library/3.9/3.9/js/dojo/dijit/themes/claro/claro.css" />
+    <link rel="stylesheet" href="http://111.30.72.13/arcgis_js_api/library/3.9/3.9/js/esri/css/esri.css" />
+    <style>
+        html, body, #mapDiv {
+            padding: 0;
+            margin: 0;
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+    <script src="js/jquery-2.1.1.js"></script>
+    <script src="js/json2.js"></script>
+    <!-- 配置dojo环境，parseOnLoad为true 且要此句要放在 v3.3 init.js前面-->
+    <script type="text/javascript">var djConfig = { parseOnLoad: true };</script>
+    <script src="http://111.30.72.13/arcgis_js_api/library/3.9/3.9/init.js"></script>
+    <script type="text/javascript">
+        var json
+
+        var map;
+        require(["dojo/parser", "esri/geometry/Extent", "esri/Color", "esri/map", "esri/layers/ArcGISTiledMapServiceLayer",
+            "esri/geometry/Point", "esri/SpatialReference", "esri/graphic", "esri/InfoTemplate", "esri/symbols/SimpleMarkerSymbol", "esri/symbols/SimpleLineSymbol", "dojo/store/JsonRest", "dojo/domReady!"],
+            function (parser, Extent, Color, Map, ArcGISTiledMapServiceLayer, Point, SpatialReference, Graphic, InfoTemplate, SimpleMarkerSymbol, SimpleLineSymbol, JsonRest) {
+                parser.parse();
+
+                map = new Map("mapDiv", {
+                    logo: false
+                });
+                var agoServiceURL = "http://111.30.72.13:6080/arcgis/rest/services/LXGSGWBaseMap/MapServer";
+                var agoLayer = new ArcGISTiledMapServiceLayer(agoServiceURL);
+                map.addLayer(agoLayer);
+
+                var infoTemplate = new InfoTemplate("${didianming}", "${fubiaozhi}", "${guanwangyali}");
+                var symbol = new SimpleMarkerSymbol(
+                  SimpleMarkerSymbol.STYLE_CIRCLE,
+                  15,
+                  new SimpleLineSymbol(
+                    SimpleLineSymbol.STYLE_SOLID,
+                    new Color([0, 0, 255, 0.5]),
+                    8
+                  ),
+                  new Color([0, 0, 255])
+                );
+
+
+                map.on("load", addPointGraphics);
+
+                function addPointGraphics() {
+                    ////var store = new JsonRest({ target: "Data/PointData.json" });
+                    //var store = new JsonRest({ target: "Data/PointData.json" });
+                    ////alert(json);
+                    //store.query({ id: "*" }).then(function (result, request) {
+                    //    var items = result.items;
+                    //    for (var i = 0; i < items.length; i++) {
+                    //        var attr = {
+                    //            "fubiaozhi": items[i].fubiaozhi,
+                    //            "guanwangyali": items[i].guanwangyali,
+                    //            "didianming": items[i].didianming
+                    //        };
+                    //        //var loc = new Point(items[i].x, items[i].y, new SpatialReference({ wkid: 4326 }));
+                    //        var loc = new Point(items[i].x, items[i].y, new SpatialReference(map.spatialReference));
+                    //        var graphic = new Graphic(loc, symbol, attr, infoTemplate);
+                    //        map.graphics.add(graphic);
+                    //    }
+                    //});
+                    $.ajax({
+                        type: "POST",
+                        url: "getAllPoints.ashx",
+
+                        success: function (response) {
+                            json = eval('[' + response + ']');
+                            //var str = '';
+                            for (var i = 0, l = json.length; i < l; i++) {
+                                //console.log("json: " + json[i]['ZDID'] + "<br/> ZBX: " + json[i]['ZBX'] + "<br/> ZBY: " + json[i]['ZBY'] + json[i]['ZDMS']);
+                                //str = str + "<input onclick='msg(this)' type='button' id='" + json[i]['ZDID'] + '_' + json[i]['ZDBH'] + "' name='" + json[i]['ZDID'] + '_' + json[i]['ZDBH'] + "'  value='" + json[i]['ZDBH'] + "' />";
+                                //str = str + "<input  type='hidden'  id='hid" + json[i]['ZDID'] + '_' + json[i]['ZDBH'] + "' value='" + JSON.stringify(json[i]) + "'/>";
+                                var attr = {
+                                    "fubiaozhi": json[i].ZDBH,
+                                    "guanwangyali": json[i].ZDID,
+                                    "didianming": json[i].ZDMS
+                                };
+                                //var loc = new Point(items[i].x, items[i].y, new SpatialReference({ wkid: 4326 }));
+                                var loc = new Point(json[i].ZBX, json[i].ZBY, new SpatialReference(map.spatialReference));
+                                var graphic = new Graphic(loc, symbol, attr, infoTemplate);
+                                map.graphics.add(graphic);
+                            }
+                        }
+                    });
+                    map.graphics.on("click", g_onMouseClick);
+                }
+
+                function g_onMouseClick(evt) {
+                    if (evt.graphic.attributes) {
+                        map.infoWindow.setTitle("地点名称： " + evt.graphic.attributes.didianming);
+                        map.infoWindow.setContent("管网压力："+evt.graphic.attributes.guanwangyali + "<br/>" +"副表值："+evt.graphic.attributes.fubiaozhi);
+                        map.infoWindow.show(evt.screenPoint);
+                    }
+                }
+            }
+        );
+
+
+        function msg(element) {
+            var ss = jQuery.parseJSON($("#hid" + element.id).val());
+            //alert(ss.ZDBH + ',' + ss.ZDID);
+            var mainid = ss.ZDID;
+            var maincode = ss.ZDBH;
+            var data =
+          {
+              ZDID: mainid,
+              ZDBH: maincode
+          };
+            var ashx = '';
+            if (mainid > 0 && mainid < 500) {
+                ashx = 'getPoint.ashx';
+            }
+            else if (mainid > 500 && mainid < 600) {
+                ashx = 'getLine.ashx';
+            }
+            else {
+                ashx = 'getPoint.ashx';
+            }
+
+            $.ajax({
+                type: "POST",
+                url: ashx,
+                data: data,
+                success: function (response) {
+                    var json = jQuery.parseJSON(response);
+                    //alert(response);
+                    var str = '';
+
+                    if (mainid > 0 && mainid < 500) {
+                        str = '主键ID:' + mainid + "||设备号:" + maincode + '||' + "||时间:" + json.SJ + "||管网主表流量:" + json.lx_324 + "||管网副表流量:" + json.lx_325 + "||管网压力:" + json.lx_326 + "||管网电瓶电压:" + json.lx_327 + "||电源电压:" + json.lx_328 + "||瞬时流量:" + json.SSLL;
+                    }
+                    else if (mainid > 500 && mainid < 600) {
+                        ashx = 'getLine.ashx';
+                    }
+                    else {
+                        ashx = 'getPoint.ashx';
+                    }
+                    alert(str);
+                }
+            });
+
+        }
+
+    </script>
+</head>
+<body class="claro">
+            <h3>显示所有数据库数据</h3>
+        <div id="mapDiv"></div>
+
+    <div id="allpoints">
+    </div>
+
+</body>
+</html>

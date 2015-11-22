@@ -1,0 +1,48 @@
+d:\documents\visual studio 2012\Projects\lingxianWeb3\lingxianWebservice\bin\lingxianWebservice.dll
+d:\documents\visual studio 2012\Projects\lingxianWeb3\lingxianWebservice\bin\lingxianWebservice.pdb
+d:\documents\visual studio 2012\Projects\lingxianWeb3\lingxianWebservice\obj\Debug\lingxianWebservice.dll
+d:\documents\visual studio 2012\Projects\lingxianWeb3\lingxianWebservice\obj\Debug\lingxianWebservice.pdb
+d:\documents\visual studio 2012\Projects\lingxianWeb3\lingxianWebservice\bin\.BLL.dll
+d:\documents\visual studio 2012\Projects\lingxianWeb3\lingxianWebservice\bin\.Model.dll
+d:\documents\visual studio 2012\Projects\lingxianWeb3\lingxianWebservice\bin\.DAL.dll
+d:\documents\visual studio 2012\Projects\lingxianWeb3\lingxianWebservice\bin\Maticsoft.Common.dll
+d:\documents\visual studio 2012\Projects\lingxianWeb3\lingxianWebservice\bin\.DBUtility.dll
+d:\documents\visual studio 2012\Projects\lingxianWeb3\lingxianWebservice\bin\System.Data.SQLite.dll
+d:\documents\visual studio 2012\Projects\lingxianWeb3\lingxianWebservice\bin\MySql.Data.dll
+d:\documents\visual studio 2012\Projects\lingxianWeb3\lingxianWebservice\bin\.BLL.pdb
+d:\documents\visual studio 2012\Projects\lingxianWeb3\lingxianWebservice\bin\.Model.pdb
+d:\documents\visual studio 2012\Projects\lingxianWeb3\lingxianWebservice\bin\.DAL.pdb
+d:\documents\visual studio 2012\Projects\lingxianWeb3\lingxianWebservice\bin\.DBUtility.pdb
+d:\documents\visual studio 2012\Projects\lingxianWeb3\lingxianWebservice\obj\Debug\lingxianWebservice.csprojResolveAssemblyReference.cache
+F:\wwmin\web\DLGIS\lingxianWeb3\lingxianWebservice\bin\lingxianWebservice.dll
+F:\wwmin\web\DLGIS\lingxianWeb3\lingxianWebservice\bin\lingxianWebservice.pdb
+F:\wwmin\web\DLGIS\lingxianWeb3\lingxianWebservice\bin\.BLL.dll
+F:\wwmin\web\DLGIS\lingxianWeb3\lingxianWebservice\bin\.Model.dll
+F:\wwmin\web\DLGIS\lingxianWeb3\lingxianWebservice\bin\.DAL.dll
+F:\wwmin\web\DLGIS\lingxianWeb3\lingxianWebservice\bin\Maticsoft.Common.dll
+F:\wwmin\web\DLGIS\lingxianWeb3\lingxianWebservice\bin\.DBUtility.dll
+F:\wwmin\web\DLGIS\lingxianWeb3\lingxianWebservice\bin\System.Data.SQLite.dll
+F:\wwmin\web\DLGIS\lingxianWeb3\lingxianWebservice\bin\MySql.Data.dll
+F:\wwmin\web\DLGIS\lingxianWeb3\lingxianWebservice\bin\.BLL.pdb
+F:\wwmin\web\DLGIS\lingxianWeb3\lingxianWebservice\bin\.Model.pdb
+F:\wwmin\web\DLGIS\lingxianWeb3\lingxianWebservice\bin\.DAL.pdb
+F:\wwmin\web\DLGIS\lingxianWeb3\lingxianWebservice\bin\.DBUtility.pdb
+F:\wwmin\web\DLGIS\lingxianWeb3\lingxianWebservice\obj\Debug\lingxianWebservice.csprojResolveAssemblyReference.cache
+F:\wwmin\web\DLGIS\lingxianWeb3\lingxianWebservice\obj\Debug\lingxianWebservice.dll
+F:\wwmin\web\DLGIS\lingxianWeb3\lingxianWebservice\obj\Debug\lingxianWebservice.pdb
+D:\Web\DLGIS\lingxianWeb\lingxianWebservice\bin\lingxianWebservice.dll
+D:\Web\DLGIS\lingxianWeb\lingxianWebservice\bin\lingxianWebservice.pdb
+D:\Web\DLGIS\lingxianWeb\lingxianWebservice\bin\.BLL.dll
+D:\Web\DLGIS\lingxianWeb\lingxianWebservice\bin\.Model.dll
+D:\Web\DLGIS\lingxianWeb\lingxianWebservice\bin\.DAL.dll
+D:\Web\DLGIS\lingxianWeb\lingxianWebservice\bin\Maticsoft.Common.dll
+D:\Web\DLGIS\lingxianWeb\lingxianWebservice\bin\.DBUtility.dll
+D:\Web\DLGIS\lingxianWeb\lingxianWebservice\bin\System.Data.SQLite.dll
+D:\Web\DLGIS\lingxianWeb\lingxianWebservice\bin\MySql.Data.dll
+D:\Web\DLGIS\lingxianWeb\lingxianWebservice\bin\.BLL.pdb
+D:\Web\DLGIS\lingxianWeb\lingxianWebservice\bin\.Model.pdb
+D:\Web\DLGIS\lingxianWeb\lingxianWebservice\bin\.DAL.pdb
+D:\Web\DLGIS\lingxianWeb\lingxianWebservice\bin\.DBUtility.pdb
+D:\Web\DLGIS\lingxianWeb\lingxianWebservice\obj\Debug\lingxianWebservice.csprojResolveAssemblyReference.cache
+D:\Web\DLGIS\lingxianWeb\lingxianWebservice\obj\Debug\lingxianWebservice.dll
+D:\Web\DLGIS\lingxianWeb\lingxianWebservice\obj\Debug\lingxianWebservice.pdb

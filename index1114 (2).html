@@ -1,0 +1,500 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1,user-scalable=no">
+    <!--<meta name="viewport" content="width=device-width, initial-scale=1.0">-->
+    <title>陵县供水管网</title>
+    <link rel="shortcut icon" href="images/favicon.ico" />
+    <link rel="stylesheet" href="http://111.30.72.13/arcgis_js_api/library/3.9/3.9/js/dojo/dijit/themes/claro/claro.css" />
+    <link rel="stylesheet" href="http://111.30.72.13/arcgis_js_api/library/3.9/3.9/js/esri/css/esri.css" />
+    <link rel="stylesheet" type="text/css" href="css/sample.css" />
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <!-- HTML5 Shim 和 Respond.js 用于让 IE8 支持 HTML5元素和媒体查询 -->
+    <!-- 注意： 如果通过 file://  引入 Respond.js 文件，则该文件无法起效果 -->
+    <!--[if lt IE 9]>
+    <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+    <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
+    <![endif]-->
+    <style>
+        html, body, #mapDiv
+        {
+            padding: 0;
+            margin: 0;
+            width: 100%;
+            height: 100%;
+        }
+        body
+        {
+            background-color: #fff;
+            overflow: hidden;
+            font-family: '微软雅黑';
+        }
+        ul
+        {
+            float: right;
+            width: 100%;
+            padding: 0;
+            margin: 0;
+            list-style-type: none;
+            position: absolute;
+            z-index: 99;
+        }
+            ul a
+            {
+                float: right;
+                width: 7em;
+                text-decoration: none;
+                color: white;
+                background-color: purple;
+                padding: 0.2em 0.6em;
+                border-right: 1px solid white;
+            }
+            ul a:hover
+                {
+                    background-color: #ff3300;
+                }
+            ul li
+            {
+                display: inline;
+                text-align: center;
+            }
+        #HomeButton
+        {
+            position: absolute;
+            top: 95px;
+            left: 20px;
+            z-index: 50;
+        }
+        #info {
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            padding: 10px;
+            background-color: #ddd;
+            font: 14px Segoe UI;
+            width: 200px;
+            text-align: center;
+            border-radius: 0 10px 0 0;
+        }
+
+        .btn_bg
+        {
+            background-image: url(assets/img/titleBackground.jpg);
+            -moz-background-size: 100% 100%;
+            -o-background-size: 100% 100%;
+            -webkit-background-size: 100% 100%;
+            background-size: 100% 100%;
+        }
+        #meta {
+            position: absolute;
+            right: 0px;
+            top: 0px;
+            width: 50em;
+            height: 2em;
+            z-index: 40;
+            /*background: #ffffff;*/
+            color: #777777;
+            padding: 0px;
+            border: 0px solid rgba(255, 255, 255, 0.6);
+            -webkit-border-radius: 5px;
+            -moz-border-radius: 5px;
+            border-radius: 0px;
+            font-family: arial;
+            font-size: 0.9em;
+        }
+
+        #meta h3 {
+            color: #666666;
+            font-size: 1.1em;
+            padding: 0px;
+            margin: 0px;
+            display: inline-block;
+        }
+    </style>
+    <script src="js/jquery-2.1.1.js"></script>
+    <script src="js/json2.js"></script>
+    <!-- 配置dojo环境，parseOnLoad为true 且要此句要放在 v3.3 init.js前面-->
+    <script type="text/javascript">var djConfig = { parseOnLoad: true };</script>
+    <script src="http://111.30.72.13/arcgis_js_api/library/3.9/3.9/init.js"></script>
+    <script type="text/javascript" src="js/InfoTip.js"></script>
+    <script type="text/javascript">
+        var json;
+        var symbol;
+        var map;
+        var iTip;
+        var infoTemplate;
+        var symbol1;
+        var symbol01;
+        var symbol02;
+        require(["dojo/parser", "esri/geometry/Extent", "esri/Color", "esri/map", "esri/layers/ArcGISTiledMapServiceLayer",
+                    "esri/geometry/Point", "esri/SpatialReference", "esri/graphic", "esri/InfoTemplate", "esri/symbols/SimpleMarkerSymbol", "esri/symbols/SimpleLineSymbol", "dojo/store/JsonRest", "esri/dijit/HomeButton", "esri/dijit/OverviewMap", "esri/dijit/Scalebar", "dojo/domReady!"],
+                function (parser, Extent, Color, Map, ArcGISTiledMapServiceLayer, Point, SpatialReference, Graphic, InfoTemplate, SimpleMarkerSymbol, SimpleLineSymbol, JsonRest, HomeButton, OverviewMap, Scalebar) {
+                    esriConfig.defaults.io.proxyUrl = "/proxy";
+                    //parser.parse();
+                    var extent = new Extent({
+                        "xmin": 456188, "ymin": 4130176,
+                        "xmax": 462876, "ymax": 4133936,
+                        "spatialReference": { "wkid": 4326 }
+                    });
+                    map = new Map("mapDiv", {
+                        extent: extent,
+                        logo: false,
+                        center: [467424.1525, 4136804.3113],
+                        zoom: 2,
+                        //minZoom: 3,  //锁定最小缩放级别
+                        //maxZoom: 5   //锁定最大缩放级别
+                    });
+                    var home = new HomeButton({
+                        map: map
+                    }, "HomeButton");
+                    home.startup();
+
+                    var overviewMapDijit = new OverviewMap({
+                        map: map,  //必要的
+                        attachTo: "bottom-right", //放置位置
+                        color: "#D84E13", //设置颜色
+                        opacity: .40,  //透明度
+                        visible: true,  //初始化可见
+                        width: 250,  //默认值是地图高度的 1/4th
+                        height: 210,  // 默认值是地图高度的 1/4th
+                        //maximizeButton:true,   // 最大化,最小化按钮，默认false
+                        expandFactor: 1.5 //概览地图和总览图上显示的程度矩形的大小之间的比例。默认值是2，这意味着概览地图将至少是两倍的大小的程度矩形。
+                    });
+                    overviewMapDijit.startup();
+
+                    var scalebar = new Scalebar({
+                        map: map,
+                        // "dual" displays both miles and kilmometers
+                        // "english" is the default, which displays miles
+                        // use "metric" for kilometers
+                        scalebarUnit: "metric",
+                        attachTo: "bottom-left",
+                    });
+                    var agoServiceURL = "http://111.30.72.13:6080/arcgis/rest/services/陵县供水管网20151108/MapServer";
+                    var agoLayer = new ArcGISTiledMapServiceLayer(agoServiceURL);
+                    map.addLayer(agoLayer);
+                    iTip = new InfoTip("i2Div", "infoTip white", map.position, true);
+
+                    infoTemplate = new InfoTemplate("${didianming}", "${fubiaozhi}", "${guanwangyali}");
+                    symbol1 = new SimpleMarkerSymbol(SimpleMarkerSymbol.STYLE_CIRCLE,12,new SimpleLineSymbol(SimpleLineSymbol.STYLE_SOLID,new Color([0, 0, 255, 0.9]),1),new Color([0, 0, 255]));
+                    symbol01 = new esri.symbol.PictureMarkerSymbol("images/sbjcd-ico.png", 18, 18);
+                    symbol02 = new esri.symbol.PictureMarkerSymbol("images/szjcd-ico.png", 18, 18);
+
+                    map.on('mouse-move', showCoordinates);
+                    map.on('mouse-drag', showCoordinates);
+                    // close the info window when the map is clicked
+                    map.on("click", cleanUp);
+                    // close the info window when esc is pressed
+                    map.on("key-down", function (e) {
+                        if (e.keyCode === 27) {
+                            cleanUp();
+                        }
+                    });
+                    //显示地图坐标
+                    function showCoordinates(evt) {
+                        var mp = evt.mapPoint;
+                        dojo.byId("info").innerHTML = "坐标：" + mp.x.toFixed(4) + " , " + mp.y.toFixed(4);  //toFiex(2) 限制小数点后显示的位数
+                    }
+                    //将水表监测点加入地图
+                    function addPointGraphics_list_1() {
+                            $.ajax({
+                                type: "GET",
+                                url: "http://222.133.60.178:809/getAllPoints.ashx",//http://222.133.60.178:809/
+                                async: false,
+                                dataType: "jsonp",
+                                jsonp: "callbackparam",
+                                jsonpCallback: "success_jsonpCallback",
+                                success: function (response) {
+                                    var json = response;
+                                    var s1=0;
+                                    var s2=0;
+                                    var s3=0;
+                                    for (var i = 0, l = json.length; i < l; i++) {
+                                        var attr = {
+                                            "ZDBH": json[i].ZDBH,
+                                            "ZDID": json[i].ZDID,
+                                            "ZDMS": json[i].ZDMS,
+                                            "XSZT": json[i].XSZT
+                                        };
+                                        if ((json[i].ZDID < 500 && json[i].ZDID > 0) || json[i].ZDID > 600) {
+                                            symbol = symbol01;
+                                            s1 += 1;
+                                            var loc = new Point(json[i].ZBX, json[i].ZBY, new SpatialReference(map.spatialReference));
+                                            var graphic = new Graphic(loc, symbol, attr, infoTemplate);
+                                            map.graphics.add(graphic);
+                                            //console.log("加入graphic成功");
+                                        }
+                                        /*else if (json[i].ZDID >= 500 && json[i].ZDID <= 600) {
+                                         symbol = symbol02;
+                                         s2+=2;
+                                         } else {
+                                         symbol = symbol1;
+                                         s3+=3;
+                                         }*/
+                                    };
+                                    //console.log("0<ZDID< 500||ZDID > 600 个数为："+zdid_i+"   ||||     "+"ZDID >= 600个数为："+zdid_j+"   其他情况个数："+zdid_k+"  ZDID总个数为："+json.length);
+                                    console.log("ZDID < 500 && ZDID > 0) || ZDID > 600 的个数是：%d",s1);
+                                },
+                                error: function (ex) {
+                                    //alert(ex);
+                                    //alert('fail');
+                                    console.log(ex);
+                                }
+                            });
+                        map.graphics.on("click", g_onMouseClick);
+                        map.graphics.on("mouse-over", g_onMouseOverHandler);
+                        map.graphics.on("mouse-out", g_onMouseOutHandler);
+                    }
+                    //将水质监测点加入地图
+                    function addPointGraphics_list_2() {
+                            $.ajax({
+                                type: "GET",
+                                url: "http://222.133.60.178:809/getAllPoints.ashx",//http://222.133.60.178:809/
+                                async: false,
+                                dataType: "jsonp",
+                                jsonp: "callbackparam",
+                                jsonpCallback: "success_jsonpCallback",
+                                success: function (response) {
+                                    var json = response;
+                                    var s1=0;
+                                    var s2=0;
+                                    var s3=0;
+                                    for (var i = 0, l = json.length; i < l; i++) {
+                                        var attr = {
+                                            "ZDBH": json[i].ZDBH,
+                                            "ZDID": json[i].ZDID,
+                                            "ZDMS": json[i].ZDMS,
+                                            "XSZT": json[i].XSZT
+                                        };
+                                        /*if ((json[i].ZDID < 500 && json[i].ZDID > 0) || json[i].ZDID > 600) {
+                                         symbol = symbol01;
+                                         s1+=1;
+                                         } else */
+                                        if (json[i].ZDID >= 500 && json[i].ZDID <= 600) {
+                                            symbol = symbol02;
+                                            s2+=2;
+                                            var loc = new Point(json[i].ZBX, json[i].ZBY, new SpatialReference(map.spatialReference));
+                                            var graphic = new Graphic(loc, symbol, attr, infoTemplate);
+                                            map.graphics.add(graphic);
+                                            //console.log("加入graphic成功");
+                                        };
+                                        /*else {
+                                         symbol = symbol1;
+                                         s3+=3;
+                                         }*/
+
+                                    };
+                                    console.log("ZDID >= 500 && ZDID <= 600 的个数是：%d",s2);
+                                    //console.log("0<ZDID< 500||ZDID > 600 个数为："+zdid_i+"   ||||     "+"ZDID >= 600个数为："+zdid_j+"   其他情况个数："+zdid_k+"  ZDID总个数为："+json.length);
+                                },
+                                error: function (ex) {
+                                    //alert(ex);
+                                    //alert('fail');
+                                    console.log(ex);
+                                }
+                            });
+
+                        map.graphics.on("click", g_onMouseClick);
+                        map.graphics.on("mouse-over", g_onMouseOverHandler);
+                        map.graphics.on("mouse-out", g_onMouseOutHandler);
+                    }
+                    //移除graphic
+                    function RemoveGraphics(){
+                        cleanUp();
+                        //map.graphics.hide();
+                        map.graphics.clear();
+                        //console.log("移除Graphic成功");
+                        //alert("移除Graphic成功");
+                    }
+                    //绑定提示框
+                    function g_onMouseClick(evt) {
+                        if (evt.graphic.attributes) {
+                            var ss = evt.graphic.attributes;
+                            msg(ss, evt);
+                        };
+                    }
+                    //鼠标悬停提示框
+                    function g_onMouseOverHandler(evt) {
+                        if (evt.graphic.attributes) {
+                            var img = '<img src="images/i_flag.png"/ style="height:20px;width20px;border:0;">';
+                            iTip.setContent(img + "&nbsp;" + evt.graphic.attributes.ZDMS);
+                            iTip.show(evt.screenPoint);
+                        }
+                        //console.log(evt.graphic.attributes);
+                    }
+                    //鼠标离开取消提示框
+                    function g_onMouseOutHandler(evt) {
+                        iTip.hide();
+                    }
+
+                    var list_item_1 = document.getElementById("list_item_1");
+                    var list_item_2=document.getElementById("list_item_2");
+                    var checkboxState_1=false;
+                    var checkboxState_2=false;
+                    //var closeGraphic=document.getElementById("btnCloseGraphic");
+                    list_item_1.addEventListener("change", function (evt){
+                        var chk = evt.target.checked;
+                        if (chk) {
+                            checkboxState_1=true;
+                            document.getElementById("Sbjc_Point_Value").innerHTML = 1127;
+                            //maxCtrl.value = 21;
+                            //heatmapRenderer.maxPixelIntensity = 21;
+                            addPointGraphics_list_1();
+                        }
+                        else {
+                            checkboxState_1=false;
+                            document.getElementById("Sbjc_Point_Value").innerHTML = "";
+                            //maxCtrl.value = 250;
+                            //heatmapRenderer.maxPixelIntensity = 250;
+                            console.log("取消水表监测点图层。。。。");
+                            RemoveGraphics();
+
+                        };
+                        if (checkboxState_2){
+                            addPointGraphics_list_2();
+                        }else {
+                            console.log("Graphics_list_2 状态是关闭");
+                        }
+                    });
+                    list_item_2.addEventListener("change",function(evt){
+                        var chk=evt.target.checked;
+                        if (chk) {
+                            checkboxState_2=true;
+                            document.getElementById("Szjc_Point_Value").innerHTML = 20;
+                            //maxCtrl.value = 21;
+                            //heatmapRenderer.maxPixelIntensity = 21;
+                            addPointGraphics_list_2();
+                        }
+                        else {
+                            checkboxState_2=false;
+                            document.getElementById("Szjc_Point_Value").innerHTML = "";
+                            //maxCtrl.value = 250;
+                            //heatmapRenderer.maxPixelIntensity = 250;
+                            console.log("取消水质监测点图层。。。。");
+                            RemoveGraphics();
+
+                        };
+                        if(checkboxState_1){
+                            addPointGraphics_list_1()
+                        }else{
+                            console.log("Graphics_list_2 状态是关闭");
+                        }
+                    });
+
+
+                    //清除弹框
+                    function cleanUp() {
+                        map.infoWindow.hide();
+                    }
+                }
+        );
+
+                //提示框方法
+                function msg(ss, evt) {
+            var mainid = ss.ZDID;
+            var maincode = ss.ZDBH;
+            var mainstate = ss.XSZT;//元素的状态
+            var data =
+            {
+                ZDID: mainid,
+                ZDBH: maincode,
+                XSZT: mainstate
+            };
+            //alert(dataPath);
+            if (mainstate == 0) { mainstate = 100; }
+            //mainid=504;
+            //mainstate=2;
+            var dataPath = '?ZDID=' + mainid + '&ZDBH=' + maincode + '&XSZT=' + mainstate;
+            var ashx = '';
+            if ((mainid < 500 || mainid >= 600) && mainstate == 100) {
+                ashx = 'http://222.133.60.178:809/getPoint.ashx' + dataPath;//http://222.133.60.178:809/
+            }
+            else {
+                ashx = 'http://222.133.60.178:809/getLine.ashx' + dataPath;//http://222.133.60.178:809/
+            }
+            //alert(ashx);
+            $.ajax({
+                type: "GET",
+                url: ashx,
+                async: false,
+                dataType: "jsonp",
+                jsonp: "callbackparam",
+                jsonpCallback: "success_jsonpCallback",
+                success: function (response) {
+                    //console.log(response);
+                    if (response.indexOf("error:") > 0) {
+                        map.infoWindow.setTitle("发生错误");//设置标题
+                        map.infoWindow.setContent("错误明细" + response);
+                    }
+                    var json = response[0];//jQuery.parseJSON(response);
+                    //alert(json.JS);
+                    map.infoWindow.setTitle("地点名称： " + ss.ZDMS);//设置标题
+                    if ((mainid < 500 || mainid >= 600) && mainstate == 100) {
+                        map.infoWindow.setContent("设备号:" + maincode + "<br/> 记录时间:" + json.SJ + "<br/> 管网主表流量:" + json.lx_324 + "<br/> 管网副表流量:" + json.lx_325 + "<br/> 管网压力:" + json.lx_326 + "<br/> 管网电瓶电压:" + json.lx_327 + "<br/> 电源电压:" + json.lx_328 + "<br/> 瞬时流量:" + json.SSLL);
+                    }
+                    else {
+                        //xian
+                        if (mainstate == 1) {
+                            map.infoWindow.setContent("设备号:" + maincode + "<br/> 记录时间:" + json.SJ + "<br/> 总氯（二氧化氯）:" + json.lx_328 + "<br/> 余氯:" + json.lx_329 + "<br/> 浊度:" + json.lx_330 + "<br/> PH值:" + json.lx_331);
+                        }
+                        else {
+                            map.infoWindow.setContent("设备号:" + maincode + "<br/> 记录时间:" + json.SJ + "<br/> ORP:" + json.lx_332 + "<br/> 电导率:" + json.lx_333);
+                        }
+                    }
+                    map.infoWindow.show(evt.screenPoint);//启动提示框
+                    //alert(str);
+                    console.log("mainid: "+mainid);
+                    console.log(json);
+                },
+                error: function (ex) {
+                    //alert(ex);
+                    //alert('fail');
+                    console.log(ex + "   mainstate: " + mainstate);
+
+                }
+            });
+        }
+
+    </script>
+</head>
+<body class="claro">
+
+    <div data-dojo-type="dijit/layout/BorderContainer" data-dojo-props="design:'headline', gutters:false" style="width: 100%; height: 100%; margin: 0;">
+
+        <div class="btn_bg" data-dojo-type="dijit/layout/ContentPane" data-dojo-props="region:'top'" >
+            <!--<img src="" style="position: absolute;right: 0px; overflow: hidden; top: 0px; height: 68px"/>-->
+            <div style="float: left; display: block; font-size: 30px; z-index: auto; padding: 0 20px; color: #1f1f1f;"><strong>陵城区供水管网GIS系统</strong></div>
+        </div>
+        <div id="mapDiv" data-dojo-type="dijit/layout/ContentPane" data-dojo-props="region:'center'" style="padding: 0; position: relative; height: 100%;">
+            <div id="meta">
+                <ul>
+                    <li style="text-align: left;"><a href="#" style="width:auto;">
+                        <span>图层列表 :</span>
+                        <div><img src='images/sbjcd-ico.png' style='width: 25px; height: 25px' />
+                            <input type="checkbox" class="list_item" id="list_item_1">
+                            <label for="list_item_1">水表监测点</label><span id="Sbjc_Point_Value">0</span></div>
+                        <div><img src='images/szjcd-ico.png' style='width: 25px; height: 25px' />
+                            <input type="checkbox" class="list_item"  id="list_item_2">
+                            <label for="list_item_2">在线水质监测点</label><span id="Szjc_Point_Value">0</span></div>
+                        </a></li>
+                    <li><a href="#">巡检车监控</a></li>
+                    <li><a href="#">报警历史</a></li>
+                    <li><a href="#" style="width: auto;">水源引水示意图</a></li>
+                    <li><a href="#">水质监测</a></li>
+                    <li><a href="#">水表监测</a></li>
+                    <!--<li ><a href="#"><input type="checkbox" id="btnCloseGraphic">关闭点</a></li>-->
+                </ul>
+            </div>
+            <div id="HomeButton"></div>
+            <span id="info" style="background-color: whitesmoke; font-weight: bolder; font-size: smaller; position: absolute; padding: 2px; left: 20px; bottom: 2px; z-index: 99;"></span>
+
+        </div>
+    </div>
+
+    <!-- jQuery (Bootstrap 的 JavaScript 插件需要引入 jQuery) -->
+    <script src="js/jquery-2.1.1.min.js"></script>
+    <!-- 包括所有已编译的插件 -->
+    <script src="js/bootstrap.min.js"></script>
+</body>
+</html>

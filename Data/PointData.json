@@ -1,0 +1,160 @@
+﻿{	identifier: "id",
+	label: "street",
+	items: [
+	{ id: "1",
+		fubiaozhi:"59.4",
+		guanwangyali:"0.07",
+		didianming:"康贾",
+	 x:"491477.8124",
+	 y:"4160399.195"
+	 },
+		{ id: "2",
+			fubiaozhi:"329.7",
+			guanwangyali:"0.06",
+			didianming:"朱木匠",
+			x:"491005.0215",
+			y:"4160186.3268"
+		},
+		{ id: "3",
+			fubiaozhi:"5215.3",
+			guanwangyali:"0.01",
+			didianming:"单家",
+			x:"490909.4507",
+			y:"4161047.5718"
+		},
+		{ id: "4",
+			fubiaozhi:"6279.5",
+			guanwangyali:"0.05",
+			didianming:"刘李",
+			x:"490298.9455",
+			y:"4160119.575"
+		},
+		{ id: "5",
+			fubiaozhi:"5170.1",
+			guanwangyali:"0.07",
+			didianming:"新范桥",
+			x:"490263.4752",
+			y:"4151396.483"
+		},
+		{ id: "6",
+			fubiaozhi:"4351",
+			guanwangyali:"0.08",
+			didianming:"张集",
+			x:"490137.7636",
+			y:"4161311.311"
+		},
+		{ id: "6",
+			fubiaozhi:"4351",
+			guanwangyali:"0.08",
+			didianming:"张集",
+			x:"490137.7636",
+			y:"4161311.311"
+		},
+		{ id: "7",
+			fubiaozhi:"7595.9",
+			guanwangyali:"0.03",
+			didianming:"后范桥",
+			x:"489893.2697",
+			y:"4150606.206"
+		},
+		{ id: "8",
+			fubiaozhi:"1944.3",
+			guanwangyali:"0.05",
+			didianming:"小王家",
+			x:"489857.2534",
+			y:"4158341.392"
+		},
+		{ id: "9",
+			fubiaozhi:"21010.8",
+			guanwangyali:"0.08",
+			didianming:"徐阁",
+			x:"489829.9217",
+			y:"4149423.925"
+		},
+		{ id: "10",
+			fubiaozhi:"21010.8",
+			guanwangyali:"0.08",
+			didianming:"段家",
+			x:"489743.6111",
+			y:"4160061.633"
+		},
+		{ id: "11",
+			fubiaozhi:"21010.8",
+			guanwangyali:"0.08",
+			didianming:"前范桥",
+			x:"489446.8155",
+			y:"4150514.475"
+		},
+		{ id: "12",
+			fubiaozhi:"21010.8",
+			guanwangyali:"0.08",
+			didianming:"小王家",
+			x:"489243.1816",
+			y:"4150447.748"
+		},
+		{ id: "13",
+			fubiaozhi:"21010.8",
+			guanwangyali:"0.08",
+			didianming:"崔家庄",
+			x:"489187.2791",
+			y:"4161139.745"
+		},
+		{ id: "14",
+			fubiaozhi:"21010.8",
+			guanwangyali:"0.08",
+			didianming:"常麻",
+			x:"489052.4595",
+			y:"4159643.361"
+		},
+		{ id: "15",
+			fubiaozhi:"21010.8",
+			guanwangyali:"0.08",
+			didianming:"马家",
+			x:"488690.3797",
+			y:"4150565.167"
+
+		},
+		{ id: "16",
+			fubiaozhi:"21010.8",
+			guanwangyali:"0.08",
+			didianming:"孙家楼",
+			x:"488644.2261",
+			y:"4150169.15"
+
+
+		},
+		{ id: "17",
+			fubiaozhi:"21010.8",
+			guanwangyali:"0.08",
+			didianming:"赵家庄",
+			x:"488485.7584",
+			y:"4158147.544"
+
+		},
+		{ id: "18",
+			fubiaozhi:"21010.8",
+			guanwangyali:"0.08",
+			didianming:"石家",
+			x:"488387.7759",
+			y:"4161276.159"
+
+		},
+		{ id: "19",
+			fubiaozhi:"21010.8",
+			guanwangyali:"0.08",
+			didianming:"崇兴街",
+			x:"487131.7384",
+			y:"4159351.398"
+
+
+		},
+		{ id: "20",
+			fubiaozhi:"21010.8",
+			guanwangyali:"0.08",
+			didianming:"小林家",
+			x:"486942.862",
+			y:"4158975.624"
+		}
+
+	 ]
+}
