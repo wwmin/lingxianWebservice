@@ -387,7 +387,7 @@
                                 //console.log(ex);
                             }
                         });
-                        alarmLayer.on("click", g_onMouseClick);
+                        alarmLayer.on("click", g_onAlarmMouseClick);
                         alarmLayer.on("mouse-over", g_onMouseOverHandler);
                         alarmLayer.on("mouse-out", g_onMouseOutHandler);
                     }
@@ -430,6 +430,14 @@
                             setMapCenter(evt,3);
                         }
                     }
+                    //绑定报警提示框
+                    function g_onAlarmMouseClick(evt){
+                        if (evt.graphic.attributes) {
+                            var ss = evt.graphic.attributes;
+                            alarmMsg(ss, evt);
+                            setMapCenter(evt,3);
+                        }
+                    }
                     //提示框方法
                     function msg(ss, evt) {
                         var mainid = ss.ZDID;
@@ -465,7 +473,8 @@
                                 //console.log(response);
                                 if (response.indexOf("error:") > 0) {
                                     map.infoWindow.setTitle("发生错误");//设置标题
-                                    map.infoWindow.setContent("错误明细" + response);
+                                    map.infoWindow.setContent("错误明细:" + response);
+                                    return false;
                                 }
                                 var json = response[0];//jQuery.parseJSON(response);
                                 //alert(json.JS);
@@ -493,6 +502,125 @@
                             }
                         });
                     }
+                    //报警信息提示框方法
+                    function alarmMsg(ss,evt){
+                        var mainid = ss.ZDID;
+                        var maincode = ss.ZDBH;
+                        var mainstate = ss.XSZT;//元素的状态
+                        var data =
+                        {
+                            ZDID: mainid,
+                            ZDBH: maincode,
+                            XSZT: mainstate
+                        };
+                        if (mainstate == 0 || mainstate == "0") { mainstate = 100; }
+                        var dataPath = '?ZDID=' + mainid + '&ZDBH=' + maincode + '&XSZT=' + mainstate;
+                        var ashx = '';
+                        if ((mainid < 500 || mainid >= 600) && mainstate == 100) {
+                            ashx = 'http://222.133.60.178:809/getPoint.ashx' + dataPath;//http://222.133.60.178:809/
+                        }
+                        else {
+                            ashx = 'http://222.133.60.178:809/getLine.ashx' + dataPath;//http://222.133.60.178:809/
+                        }
+                        console.log(ashx);
+                        $.ajax({
+                            type: "GET",
+                            url:  ashx,
+                            async: false,
+                            dataType: "jsonp",
+                            jsonp: "callbackparam",
+                            jsonpCallback: "success_jsonpCallback",
+                            success: function (response1) {
+                                console.log(response1);
+                                if (response1.indexOf("error:") > 0) {
+                                    map.infoWindow.setTitle("发生错误");//设置标题
+                                    map.infoWindow.setContent("错误明细:" + response);
+                                    return false;
+                                }
+                                //alert("ajax成功");
+                                for (var i = 0; i < response1.length; i++) {
+                                    //console.log(response1.length);
+                                    //var json = response1[i];//jQuery.parseJSON(response);
+                                    var json1 = response1[i];//jQuery.parseJSON(response);
+                                    var attType = json1.RELA;
+                                    console.log(attType);
+                                    map.infoWindow.setTitle("地点名称： " + ss.ZDMS);//设置标题
+                                    var alarmText = "";
+                                    if ((mainid < 500 || mainid >= 600) && mainstate == 100) {
+                                        alarmText = "设备号:" + maincode + "<br/> 记录时间:" + json1.SJ + "<br/> 管网主表流量:" + json1.lx_324
+                                                + "<br/> 管网副表流量:" + json1.lx_325 + "<br/> 管网压力:" + json1.lx_326 + "<br/> 管网电瓶电压:" + json1.lx_327
+                                                + "<br/> 电源电压:" + json1.lx_328 + "<br/> 瞬时流量:" + json1.SSLL + "<br><br><strong>以下是报警数值</strong>";
+                                    }
+                                    else {
+                                        if (mainstate == 1) {
+                                            alarmText = "设备号:" + maincode + "<br/> 记录时间:" + json.SJ + "<br/> 总氯（二氧化氯）:" + json.lx_328
+                                                    + "<br/> 余氯:" + json.lx_329 + "<br/> 浊度:" + json.lx_330 + "<br/> PH值:" + json.lx_331;
+                                            //map.infoWindow.setContent("设备号:" + maincode + "<br/> 记录时间:" + json.SJ + "<br/> 总氯（二氧化氯）:" + json.lx_328 + "<br/> 余氯:" + json.lx_329 + "<br/> 浊度:" + json.lx_330 + "<br/> PH值:" + json.lx_331);
+                                        }
+                                        else {
+                                            alarmText = "设备号:" + maincode + "<br/> 记录时间:" + json.SJ + "<br/> ORP:" + json.lx_332 + "<br/> 电导率:" + json.lx_333;
+                                            //map.infoWindow.setContent("设备号:" + maincode + "<br/> 记录时间:" + json.SJ + "<br/> ORP:" + json.lx_332 + "<br/> 电导率:" + json.lx_333);
+                                        }
+                                    };
+                                    switch (attType) {
+                                        case "0":
+                                            map.infoWindow.setContent(alarmText + "正常数值" + json1.XMMC + "等于" + json1.SETVA1 + "<br/>" + "<b><span style='color;red;'>报警数值" + json1.XMMC + "等于" + json1.TRVA + "</span>");
+                                            //attHTML += '正常数值    ' + json1.XMMC + '  等于  ' + json1.SETVA1 + '<br/>';
+                                            //attHTML += '<b><span style="color;red;">报警数值    ' + json1.XMMC + '  等于  ' + json1.TRVA + '</span></b><br/><hr/>';
+                                                console.log("case 0");
+                                            break;
+                                        case "1":
+                                            map.infoWindow.setContent(alarmText + "正常数值" + json1.XMMC + "大于" + json1.SETVA1 + "<br/>" + "<b><span style='color;red;'>报警数值" + json1.XMMC + "等于" + json1.TRVA + "</span>");
+                                            //attHTML += '正常数值    ' + json1.XMMC + '  大于  ' + json1.SETVA1 + '<br/>';
+                                            //attHTML += '<b><span style="color;red;">报警数值    ' + json1.XMMC + '  等于  ' + json1.TRVA + '</span></b><br/><hr/>';
+                                            console.log("case 1");
+                                            break;
+                                        case "2":
+                                            map.infoWindow.setContent(alarmText + "正常数值" + json1.XMMC + "大于等于" + json1.SETVA1 + "<br/>" + "<b><span style='color;red;'>报警数值" + json1.XMMC + "等于" + json1.TRVA + "</span>");
+                                            //attHTML += '正常数值    ' + json1.XMMC + '  大于等于  ' + json1.SETVA1 + '<br/>';
+                                            //attHTML += '<b><span style="color;red;">报警数值    ' + json1.XMMC + '  等于  ' + json1.TRVA + '</span></b><br/><hr/>';
+                                            console.log("case 2");
+                                            break;
+                                        case "3":
+                                            map.infoWindow.setContent(alarmText + "正常数值" + json1.XMMC + "小于" + json1.SETVA1 + "<br/>" + "<b><span style='color;red;'>报警数值" + json1.XMMC + "等于" + json1.TRVA + "</span>");
+                                            //attHTML += '正常数值    ' + json1.XMMC + '  小于  ' + json1.SETVA1 + '<br/>';
+                                            console.log("case 3");
+                                            //attHTML += '<b><span style="color;red;">报警数值    ' + json1.XMMC + '  等于  ' + json1.TRVA + '</span></b><br/><hr/>';
+                                            break;
+                                        case "4":
+                                            map.infoWindow.setContent(alarmText + "正常数值" + json1.XMMC + "小于等于" + json1.SETVA1 + "<br/>" + "<b><span style='color;red;'>报警数值" + json1.XMMC + "等于" + json1.TRVA + "</span>");
+                                            //attHTML += '正常数值    ' + json1.XMMC + '  小于等于  ' + json1.SETVA1 + '<br/>';
+                                            //attHTML += '<b><span style="color;red;">报警数值    ' + json1.XMMC + '  等于  ' + json1.TRVA + '</span></b><br/><hr/>';
+                                            console.log("case 4");
+                                            break;
+                                        case "5":
+                                            map.infoWindow.setContent(alarmText + "正常数值" + json1.XMMC + "不在" + json1.SETVA1 + "和" + json1.SETVA2 + "这个区间范围内<br/>" + "<b><span style='color;red;'>报警数值" + json1.XMMC + "等于" + json1.TRVA + "</span>");
+                                            //attHTML += '正常数值    ' + json1.XMMC + '  不在  ' + json1.SETVA1 + '  和  ' + json1.SETVA2 + '  这个区间范围内 <br/>';
+                                            //attHTML += '<b><span style="color;red;">报警数值    ' + json1.XMMC + '  等于  ' + json1.TRVA + '</span></b><br/><hr/>';
+                                            console.log("case 5");
+                                            break;
+                                        case "6":
+                                            map.infoWindow.setContent(alarmText + "正常数值" + json1.XMMC + "在" + json1.SETVA1 + "和" + json1.SETVA2 + "这个区间范围内<br/>" + "<b><span style='color;red;'>报警数值" + json1.XMMC + "等于" + json1.TRVA + "</span>");
+                                            //attHTML += '正常数值    ' + json1.XMMC + '  在  ' + json1.SETVA1 + '  和  ' + json1.SETVA2 + '  这个区间范围内 <br/>';
+                                            //attHTML += '<b><span style="color;red;">报警数值    ' + json1.XMMC + '  等于  ' + json1.TRVA + '</span></b><br/><hr/>';
+                                            console.log("case 6");
+                                            break;
+                                        default:
+                                            console.log("没有case值符合");
+                                            map.infoWindow.setContent(alarmText+"<br><span>无</span>");
+                                            break
+                                    }
+                                    map.infoWindow.show(evt.screenPoint);//启动提示框
+                                }
+                            },
+                            error: function (ex) {
+                                //alert(ex);
+                                //alert('fail');
+                                console.log(ex);
+                            }
+                        });
+                    }
+
                     //鼠标悬停提示框
                     function g_onMouseOverHandler(evt) {
                         if (evt.graphic.attributes) {
