@@ -191,13 +191,6 @@
                           IdentifyTask,IdentifyParameters,Popup,Point, SpatialReference, Graphic,GraphicsLayer,  SimpleMarkerSymbol,SimpleFillSymbol,
                           SimpleLineSymbol,arrayUtils, JsonRest, HomeButton, OverviewMap, Scalebar,domConstruct) {
                     //parser.parse(); //与djConfig = { parseOnLoad: true } 重复，目前可以不用设置此项，以后是否会需要，在看
-                    var identifyTask, identifyParams;  //定义查询变量
-                    var popup = new Popup({
-                        fillSymbol: new SimpleFillSymbol(SimpleFillSymbol.STYLE_SOLID,
-                                new SimpleLineSymbol(SimpleLineSymbol.STYLE_SOLID,
-                                        new Color([255, 0, 0]), 2), new Color([255, 255, 0, 0.25]))
-                    }, domConstruct.create("div"));
-
                     var extent = new Extent({
                         "xmin": 456188, "ymin": 4130176,
                         "xmax": 462876, "ymax": 4133936,
@@ -241,6 +234,60 @@
                     var agoLayer = new ArcGISTiledMapServiceLayer(agoServiceURL);
                     //底图map
                     map.addLayer(agoLayer);
+
+                    //管线查询
+                    var identifyTask, identifyParams;  //定义查询变量
+                    var popup = new Popup({
+                        fillSymbol: new SimpleFillSymbol(SimpleFillSymbol.STYLE_SOLID,
+                                new SimpleLineSymbol(SimpleLineSymbol.STYLE_SOLID,
+                                        new Color([255, 0, 0]), 2), new Color([255, 255, 0, 0.25]))
+                    }, domConstruct.create("div"));
+                    map.on("load", mapReady);
+                    var parcelsURL = "http://111.30.72.13:6080/arcgis/rest/services/陵县供水管网动态管线/MapServer";
+                    map.addLayer(new ArcGISDynamicMapServiceLayer(parcelsURL,
+                            { opacity: 1 }));
+                    function mapReady () {
+                        map.on("click", executeIdentifyTask);
+                        //create identify tasks and setup parameters
+                        identifyTask = new IdentifyTask(parcelsURL);
+                        identifyParams = new IdentifyParameters();
+                        identifyParams.tolerance = 3;
+                        identifyParams.returnGeometry = true;
+                        identifyParams.layerIds = [1];  //定义要查询的layerID  [0,1,2]
+                        identifyParams.layerOption = IdentifyParameters.LAYER_OPTION_ALL;
+                        identifyParams.width = map.width;
+                        identifyParams.height = map.height;
+                    }
+                    function executeIdentifyTask (event) {
+                        identifyParams.geometry = event.mapPoint;
+                        identifyParams.mapExtent = map.extent;
+
+                        var deferred = identifyTask
+                                .execute(identifyParams)
+                                .addCallback(function (response) {
+                                    return arrayUtils.map(response, function (result) {
+                                        var feature = result.feature;
+                                        var layerName = result.layerName;
+                                        feature.attributes.layerName = layerName;
+                                        if (layerName === '供水管网') {
+                                            var taxParcelTemplate = new InfoTemplate("供水管网数据",
+                                                    "起点X坐标：${SX}<br/>起点Y坐标：${SY}<br/>终点X坐标：${EX}<br/>终点Y坐标：${EY}<br/> 长度: ${L}米 <br/>管径：${R}<br/>材质：${M}");
+                                            feature.setInfoTemplate(taxParcelTemplate);
+                                        }
+                                        /*else if (layerName === 'Building Footprints') {
+                                            console.log(feature.attributes.PARCELID);
+                                            var buildingFootprintTemplate = new InfoTemplate("",
+                                                    "Parcel ID: ${PARCELID}");
+                                            feature.setInfoTemplate(buildingFootprintTemplate);
+                                        }*/
+                                        return feature;
+                                    });
+                                });
+                        map.infoWindow.setFeatures([deferred]);
+                        map.infoWindow.show(event.mapPoint);
+                    }
+
+                    //添加多个图层到map
                      //创建图形图层
                      sbLayer = new GraphicsLayer();
                      //把图层添加到地图上
