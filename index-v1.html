@@ -1,0 +1,243 @@
+﻿<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=7" />
+    <title></title>
+    <link rel="stylesheet" type="text/css" href="http://111.30.72.13/arcgis_js_api/library/3.3/jsapi/js/dojo/dijit/themes/tundra/tundra.css">
+    <!--注意：从3.2版本开始，需要引入esri.css，不认地图显示不正常-->
+    <link rel="stylesheet" type="text/css" href="http://111.30.72.13/arcgis_js_api/library/3.3/jsapi/js/esri/css/esri.css" />
+
+    <style>
+        html,body{height:100%;width:100%;margin:0;overflow:hidden;}
+        #map{
+            padding:0;
+        }
+        #header{
+            font-size: 1.1em;
+            font-family: sans-serif;
+            padding-left: 1em;
+            padding-top:4px;
+            color:#660000;
+        }
+        .templatePicker {
+            border: none;
+        }
+
+        .dj_ie .infowindow .window .top .right .user .content { position: relative; }
+        .dj_ie .simpleInfoWindow .content { position: relative; }
+    </style>
+
+    <!-- 配置dojo环境，parseOnLoad为true 且要此句要放在 v3.3 init.js前面-->
+    <script type="text/javascript">var djConfig = {parseOnLoad: true};</script>
+    <!-- 引用api源头-->
+    <script type="text/javascript" src="http://111.30.72.13/arcgis_js_api/library/3.3/jsapi/init.js"></script>
+    <script type="text/javascript">
+        dojo.require("esri.map");
+        dojo.require("esri.layers.agstiled");  //AMD Module: require(["esri/layers/ArcGISTiledMapServiceLayer"], function(ArcGISTiledMapServiceLayer) { /* code goes here */ });
+        dojo.require("esri.toolbars.draw");
+//        dojo.require("dijit.Dialog");  //在AMD中没找到
+//        dojo.require("dijit.TooltipDialog");
+        dojo.require("esri.tasks.query");
+        dojo.require("esri.tasks.identify");
+        dojo.require("dijit.layout.ContentPane");
+        dojo.require("dijit.layout.TabContainer");
+//        dojo.require("dijit.form.Button");
+
+        var map,layer, tb;
+        //图层列表变量
+        var visible = [],defaultSymbol,highlightSymbol;
+        //添加点线面工具栏变量
+        var toolbar, symbol, geomTask;
+        //显示属性的变量
+        var identifyTask, identifyParams,identifySymbol;
+        var layer2results, layer3results, layer4results;
+
+
+        function init() {
+            map = new esri.Map("map",{logo:false});
+            var imageParameters = new esri.layers.ImageParameters();
+            imageParameters.format = "PNG24";
+            layer = new esri.layers.ArcGISDynamicMapServiceLayer("http://111.30.72.13:6080/arcgis/rest/services/陵县供水管网/MapServer", {"opacity":1, "imageParameters":imageParameters});
+
+            if (layer.loaded) {
+                //addPointData(map);
+                buildLayerList(layer);
+                initIdentifyFunctionality(map);
+            }
+            else {
+                //dojo.connect(map,"onLoad",addPointData);
+                dojo.connect(layer,"onLoad",buildLayerList);
+                dojo.connect(map, "onLoad", initIdentifyFunctionality);
+            }
+
+            dojo.connect(map.infoWindow, "onShow", function() {
+                dijit.byId("tabs").resize();
+            });
+        }
+        ///////////////------数据库加点-----开始//////////////
+        function addPointData(map){
+            //清除图中的元素
+            map.graphics.clear();
+            var location = new esri.geometry.Point(473014.03156957886,4140425.1046490045, map.spatialReference)
+            map.centerAndZoom(location, 2);
+
+            //创建图层
+            var graphicLayer = new esri.layers.GraphicsLayer();
+            //把图层添加到地图上
+            map.addLayer(graphicLayer);
+
+            //设置标注的经纬度
+            var pt = new esri.geometry.Point(473014.03156957886,4140425.1046490045, map.spatialReference);
+            //设置标注显示的图标
+            var symbol = new esri.symbol.PictureMarkerSymbol("images/01.png", 30, 30);
+            //要在模版中显示的参数
+            var attr = { "address": "陵县",
+                "pointX":"473014.03156957886",
+                "pointY":"4140425.1046490045"
+            };
+            //创建模版
+            var infoTemplate = new esri.InfoTemplate("属性信息", "地址:${address}<br/>"+"X:${pointX}<br/>"+"Y:${pointY}<br/>"+"注：此点为从数据库中读取");
+            //创建图像
+            var graphic = new esri.Graphic(pt, symbol, attr, infoTemplate);
+            //把图像添加到刚才创建的图层上
+            graphicLayer.add(graphic);
+            dojo.connect(map, "onMouseMove", showCoordinates);
+            //鼠标按下后，拖动地图显示坐标的事件
+            dojo.connect(map, "onMouseDrag", showCoordinates);
+        }
+        ///////////////------数据库加点-----结束//////////////
+
+
+        ///////////图层列表---开始//////////////
+
+        function buildLayerList(layer) {
+            var infos = layer.layerInfos, info;
+            var items = [];
+
+            for (var i=0, il=infos.length; i<il; i++) {
+                info = infos[i];
+                if (info.defaultVisibility) {
+                    visible.push(info.id);
+                }
+                switch (i){
+                    case 0:
+                        items[i] = "<img src='images/llj.png' style='width: 15px;height: 15px'/>"+"<input type='checkbox' class='list_item' checked='" + (info.defaultVisibility ? "checked" : "") + "' id='" + info.id + "' onclick='updateLayerVisibility();' /><label for='" + info.id + "'>" + info.name + "</label>"+"&nbsp";
+                        break;
+                    case 1:
+                        items[i] = "<img src='images/zxszjcd.png' style='width: 15px;height: 15px'/>"+"<input type='checkbox' class='list_item' checked='" + (info.defaultVisibility ? "checked" : "") + "' id='" + info.id + "' onclick='updateLayerVisibility();' /><label for='" + info.id + "'>" + info.name + "</label>"+"&nbsp";
+                        break;
+                    case 2:
+                        items[i] = "<img src='images/sbjcd.png' style='width: 15px;height: 15px'/>"+"<input type='checkbox' class='list_item' checked='" + (info.defaultVisibility ? "checked" : "") + "' id='" + info.id + "' onclick='updateLayerVisibility();' /><label for='" + info.id + "'>" + info.name + "</label>"+"&nbsp";
+                        break;
+                    case 3:
+                        items[i] = "<img src='images/czm.png' style='width: 15px;height: 15px'/>"+"<input type='checkbox' class='list_item' checked='" + (info.defaultVisibility ? "checked" : "") + "' id='" + info.id + "' onclick='updateLayerVisibility();' /><label for='" + info.id + "'>" + info.name + "</label>"+"&nbsp";
+                        break;
+                    case 4:
+                        items[i] = "<img src='images/gsgw.png' style='width: 15px;height: 15px'/>"+"<input type='checkbox' class='list_item' checked='" + (info.defaultVisibility ? "checked" : "") + "' id='" + info.id + "' onclick='updateLayerVisibility();' /><label for='" + info.id + "'>" + info.name + "</label>"+"&nbsp";
+                        break;
+                    case 5:
+                        items[i] = "<img src='images/lxbj.png' style='width: 15px;height: 15px'/>"+"<input type='checkbox' class='list_item' checked='" + (info.defaultVisibility ? "checked" : "") + "' id='" + info.id + "' onclick='updateLayerVisibility();' /><label for='" + info.id + "'>" + info.name + "</label>"+"&nbsp";
+                        break;
+                }
+                //items[i] = "<img src='images/llj.png'/>"+"<input type='checkbox' class='list_item' checked='" + (info.defaultVisibility ? "checked" : "") + "' id='" + info.id + "' onclick='updateLayerVisibility();' /><label for='" + info.id + "'>" + info.name + "</label>";
+            }
+            dojo.byId("layer_list").innerHTML = items.join();
+            layer.setVisibleLayers(visible);
+            map.addLayer(layer);
+            //initialize symbology
+//            defaultSymbol = new esri.symbol.SimpleMarkerSymbol().setColor(new dojo.Color([0,0,255]));
+//            highlightSymbol = new esri.symbol.SimpleMarkerSymbol().setColor(new dojo.Color([255,0,0]));
+        }
+        /*
+         * 图层列表--更新是否可见
+         * */
+        function updateLayerVisibility() {
+            var inputs = dojo.query(".list_item"), input;
+            visible = [];
+            for (var i=0, il=inputs.length; i<il; i++) {
+                if (inputs[i].checked) {
+                    visible.push(inputs[i].id);
+                }
+            }
+            layer.setVisibleLayers(visible);
+        }
+        ///////////图层列表---结束/////////////////
+        //////////////////////////////////////////////显示属性信息--------开始////////////////////////////////////////
+        function initIdentifyFunctionality(map) {
+            dojo.connect(map, "onClick", doIdentify);
+        	//esriConfig.defaults.io.proxyUrl = "proxy.ashx";
+        	//esriConfig.defaults.io.alwaysUseProxy = false;
+            identifyTask =new esri.tasks.IdentifyTask("http://111.30.72.13:6080/arcgis/rest/services/陵县供水管网/MapServer");
+
+            identifyParams = new esri.tasks.IdentifyParameters();
+            identifyParams.tolerance = 3;
+            identifyParams.returnGeometry = true;
+            identifyParams.layerIds = [0,1,2];
+            identifyParams.layerOption = esri.tasks.IdentifyParameters.LAYER_OPTION_ALL;
+
+            map.infoWindow.resize(300, 170);
+            map.infoWindow.setContent(dijit.byId("tabs").domNode);
+            map.infoWindow.setTitle("Identify Results");
+
+            symbol = new esri.symbol.SimpleFillSymbol(esri.symbol.SimpleFillSymbol.STYLE_SOLID, new esri.symbol.SimpleLineSymbol(esri.symbol.SimpleLineSymbol.STYLE_SOLID, new dojo.Color([255,0,0]), 2), new dojo.Color([255,255,0,0.5]));
+        }
+        function doIdentify(evt) {
+            // 清除上一次的高亮显示
+            map.graphics.clear();
+            // Identify的geometry
+            identifyParams.geometry = evt.mapPoint;
+            // Identify范围
+            identifyParams.mapExtent = map.extent;
+            identifyTask.execute(identifyParams, function(idResults) { addIdentifyToMap(idResults, evt); });
+        }
+        function addIdentifyToMap(idResults, evt) {
+            for (var i = 0, il = idResults.length; i < il; i++) {
+                var idResult = idResults[i];
+                if(idResult.layerName=="水表监测点"){
+                    map.infoWindow.setTitle("当前选择的地点名称：" + idResult.feature.attributes.地点名);
+                    map.infoWindow.setContent("主表值（m³）：" + idResult.feature.attributes.主表值 + "<br/>副表值（m³）：" +idResult.feature.attributes.副表值+
+                            "<br />管网压力（MPa）： " + idResult.feature.attributes.管网压力 + "<br/>埋   深（m）：" + idResult.feature.attributes.埋深+
+                    "<br/>材质："+idResult.feature.attributes.材质);
+                }else if(idResult.layerName=="流量计"){
+                    map.infoWindow.setTitle("当前选择的地点名称：" + idResult.feature.attributes.地点名);
+                    map.infoWindow.setContent("FID:"+idResult.feature.attributes.FID+"<br/>读表值：" + idResult.feature.attributes.读表值+"<br/><br/>此元素属性为   '面'");
+                }else if(idResult.layerName=="在线水质监测点"){
+                    map.infoWindow.setTitle("当前选择的设备地点：" + idResult.feature.attributes.设备地点);
+                    map.infoWindow.setContent("设备号：" + idResult.feature.attributes.设备号 + "<br/>pH值："+idResult.feature.attributes.pH值+"<br/>二氧化氯："+parseFloat(idResult.feature.attributes.二氧化氯1).toFixed(2) +
+                            "<br />浑浊度：" + parseFloat(idResult.feature.attributes.浑浊度1).toFixed(2) + "<br/>电导率：" + idResult.feature.attributes.电导率);
+                }
+                map.infoWindow.show(evt.screenPoint, map.getInfoWindowAnchor(evt.screenPoint));
+            }
+        }
+        //////////////////////////////////////////////显示属性信息--------结束////////////////////////////////////////
+        //显示地图坐标
+        function showCoordinates(evt)
+        {
+            var mp = evt.mapPoint;
+            dojo.byId("info").innerHTML = "坐标：" + mp.x.toFixed(4) + " , " + mp.y.toFixed(4);  //toFiex(2) 限制小数点后显示的位数
+        }
+        dojo.addOnLoad(init);
+    </script>
+</head>
+<body class="tundra">
+图层列表 : <span id="layer_list"></span><br /><hr/>
+<input type="button"  id="btngif" onclick="gifalert();" value="水源引水示意图" />
+<div id="map" style="width:auto; height:100%; border: 0.5px solid #000;" class="tundra"></div>
+<span id="info" style="float:right"></span>
+<!--<div>
+    Zoom Slider :
+    <span><input type="button" value="Hide" onclick="map.hideZoomSlider()" />
+    <input type="button" value="Show" onclick="map.showZoomSlider()" /><span id="info" style="float:right"></span></span>
+</div>-->
+<!-- info window tabs -->
+    <div id="tabs" dojoType="dijit.layout.TabContainer" style="width:250px;height:130px;">
+    </div>
+    <script language="javascript" type="text/javascript">
+        function gifalert()
+        {
+            window.open("gif.html", "", "dialogWidth=840px;dialogHeight=800px;status=no;help=no;");
+        }
+    </script>
+</body>
+</html>

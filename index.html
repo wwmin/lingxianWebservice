@@ -184,9 +184,20 @@
         var zdid_i = 0,zdid_j= 0,zdid_k= 0,zdid_l=0;  //水表点，水质点，其它点个数全局变量
         var alarmString="";
         require(["dojo/parser","dijit/registry", "dojo/on","dojo/dom","dojo/dnd/Moveable", "esri/geometry/Extent", "esri/Color", "esri/map", "esri/layers/ArcGISTiledMapServiceLayer",
-                    "esri/geometry/Point", "esri/SpatialReference", "esri/graphic", "esri/layers/GraphicsLayer", "esri/InfoTemplate", "esri/symbols/SimpleMarkerSymbol", "esri/symbols/SimpleLineSymbol", "dojo/store/JsonRest", "esri/dijit/HomeButton", "esri/dijit/OverviewMap", "esri/dijit/Scalebar", "dojo/domReady!"],
-                function (parser, registry, on,dom,Moveable,Extent, Color, Map, ArcGISTiledMapServiceLayer, Point, SpatialReference, Graphic,GraphicsLayer, InfoTemplate, SimpleMarkerSymbol, SimpleLineSymbol, JsonRest, HomeButton, OverviewMap, Scalebar) {
+                    "esri/layers/ArcGISDynamicMapServiceLayer","esri/InfoTemplate","esri/tasks/IdentifyTask","esri/tasks/IdentifyParameters","esri/dijit/Popup",
+                    "esri/geometry/Point", "esri/SpatialReference", "esri/graphic", "esri/layers/GraphicsLayer", "esri/symbols/SimpleMarkerSymbol","esri/symbols/SimpleFillSymbol",
+                    "esri/symbols/SimpleLineSymbol","dojo/_base/array", "dojo/store/JsonRest", "esri/dijit/HomeButton", "esri/dijit/OverviewMap", "esri/dijit/Scalebar","dojo/dom-construct", "dojo/domReady!"],
+                function (parser, registry, on,dom,Moveable,Extent, Color, Map, ArcGISTiledMapServiceLayer,ArcGISDynamicMapServiceLayer,InfoTemplate,
+                          IdentifyTask,IdentifyParameters,Popup,Point, SpatialReference, Graphic,GraphicsLayer,  SimpleMarkerSymbol,SimpleFillSymbol,
+                          SimpleLineSymbol,arrayUtils, JsonRest, HomeButton, OverviewMap, Scalebar,domConstruct) {
                     //parser.parse(); //与djConfig = { parseOnLoad: true } 重复，目前可以不用设置此项，以后是否会需要，在看
+                    var identifyTask, identifyParams;  //定义查询变量
+                    var popup = new Popup({
+                        fillSymbol: new SimpleFillSymbol(SimpleFillSymbol.STYLE_SOLID,
+                                new SimpleLineSymbol(SimpleLineSymbol.STYLE_SOLID,
+                                        new Color([255, 0, 0]), 2), new Color([255, 255, 0, 0.25]))
+                    }, domConstruct.create("div"));
+
                     var extent = new Extent({
                         "xmin": 456188, "ymin": 4130176,
                         "xmax": 462876, "ymax": 4133936,
@@ -196,7 +207,8 @@
                         extent: extent,
                         logo: false,
                         //center: [467424.1525, 4136804.3113],
-                        zoom: 2
+                        zoom: 2,
+                        infoWindow: popup
                     });
                     //Home按钮
                     var home = new HomeButton({
