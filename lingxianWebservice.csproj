@@ -58,6 +58,7 @@
     <Reference Include="System.EnterpriseServices" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="alarm.html" />
     <Content Include="index.html" />
     <Content Include="js\jquery-2.1.1.js" />
     <Content Include="js\jquery-2.1.1.min.js" />
@@ -69,6 +70,12 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ExtendDLL.cs" />
+    <Compile Include="getAlarm.ashx.cs">
+      <DependentUpon>getAlarm.ashx</DependentUpon>
+    </Compile>
+    <Compile Include="getAllAlarm.ashx.cs">
+      <DependentUpon>getAllAlarm.ashx</DependentUpon>
+    </Compile>
     <Compile Include="getAllPoints.ashx.cs">
       <DependentUpon>getAllPoints.ashx</DependentUpon>
     </Compile>
@@ -85,6 +92,8 @@
     <Content Include="getPoint.ashx" />
     <Content Include="getLine.ashx" />
     <Content Include="Data\PointData.json" />
+    <Content Include="getAlarm.ashx" />
+    <Content Include="getAllAlarm.ashx" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>

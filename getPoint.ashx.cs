@@ -12,7 +12,7 @@ namespace lingxianWebservice
     /// </summary>
     public class getPoint : IHttpHandler
     {
-        private static readonly Maticsoft.BLL.ZB_Date_all_one bll = new Maticsoft.BLL.ZB_Date_all_one();
+        private static readonly Maticsoft.BLL.ZB_Data_all_one bll = new Maticsoft.BLL.ZB_Data_all_one();
 
         public void ProcessRequest(HttpContext context)
         {

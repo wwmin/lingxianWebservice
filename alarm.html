@@ -22,7 +22,9 @@
     <script>
         //点击报警点时，显示相关信息  sndddx 20151119
         function getAlarm(el) {
+
             var maincode = el.id;
+            console.log(" maincode 值为："+maincode);
             var mainid = $('#hida' + maincode).val();
             var mainstate = $('#hidb' + maincode).val();
 
@@ -30,12 +32,14 @@
             var dataPath = '?ZDID=' + mainid + '&ZDBH=' + maincode + '&XSZT=' + mainstate;
             var ashx = '';
             if ((mainid < 500 || mainid >= 600) && mainstate == 100) {
-                ashx = 'http://222.133.60.178:809/getPoint.ashx' + dataPath;//http://222.133.60.178:809/
+                //ashx = 'http://222.133.60.178:809/getPoint.ashx' + dataPath;//http://222.133.60.178:809/
+                ashx = 'getPoint.ashx' + dataPath;//http://222.133.60.178:809/
             }
             else {
-                ashx = 'http://222.133.60.178:809/getLine.ashx' + dataPath;//http://222.133.60.178:809/
+                //ashx = 'http://222.133.60.178:809/getLine.ashx' + dataPath;//http://222.133.60.178:809/
+                ashx = 'getLine.ashx' + dataPath;//http://222.133.60.178:809/
             }
-
+            alert(ashx);
 
             $.ajax({
                 type: "GET",
@@ -74,7 +78,8 @@
                     //获取新的报警数据 ***********************************************
                     $.ajax({
                         type: "GET",
-                        url: 'http://222.133.60.178:809/getAlarm.ashx?ZDBH=' + maincode,
+//                        url: 'http://222.133.60.178:809/getAlarm.ashx?ZDBH=' + maincode,
+                        url: 'getAlarm.ashx?ZDBH=' + maincode,
                         async: false,
                         dataType: "jsonp",
                         jsonp: "callbackparam",
@@ -161,8 +166,9 @@
 
                 $.ajax({
                     type: "GET",
-                    url: "http://222.133.60.178:809/getAllAlarm.ashx",//http://222.133.60.178:809/
-                    async: false,
+                    //url: "http://222.133.60.178:809/getAllAlarm.ashx",//http://222.133.60.178:809/
+                    url: "getAllAlarm.ashx",//http://222.133.60.178:809/
+                    async: true,
                     dataType: "jsonp",
                     jsonp: "callbackparam",
                     jsonpCallback: "success_jsonpCallback",

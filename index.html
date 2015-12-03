@@ -392,11 +392,11 @@
                     //将报警点加入地图中
                     var initAlarmLayer=0;
                     function addAlarmPointGraphics() {
-
+                            console.log("进入添加alarm数据方法");
                         $.ajax({
                             type: "GET",
-                            url: "http://222.133.60.178:809/getAllAlarm.ashx",//http://222.133.60.178:809/
-                            //url: "getAllAlarm.ashx",//http://222.133.60.178:809/
+                            //url: "http://222.133.60.178:809/getAllAlarm.ashx",//http://222.133.60.178:809/
+                            url: "getAllAlarm.ashx",//http://222.133.60.178:809/
                             async: false,
                             dataType: "jsonp",
                             jsonp: "callbackparam",
@@ -407,6 +407,7 @@
                                     alert(response);
                                     return false;
                                 }
+                                alert("报警ajax成功");
                                 initAlarmLayer+=1;
                                 alarmString="";
                                 for (var i = 0, l = json.length; i < l; i++) {
@@ -443,7 +444,7 @@
                             error: function (ex) {
                                 //alert(ex);
                                 //alert('fail');  //有个问题，第一次ajax能正常显示，第二次以后就会出错，可能是没有消除ajax连接的原因？
-                                //console.log(ex);
+                                console.log(ex+"   alarm失败 。");
                             }
                         });
                         alarmLayer.on("click", g_onAlarmMouseClick);
@@ -579,7 +580,8 @@
 
                         $.ajax({
                             type: "GET",
-                            url:  'http://222.133.60.178:809/getAlarm.ashx'+dataPath,
+                            //url:  'http://222.133.60.178:809/getAlarm.ashx'+dataPath,
+                            url:  'getAlarm.ashx'+dataPath,
                             async: false,
                             dataType: "jsonp",
                             jsonp: "callbackparam",
@@ -604,7 +606,7 @@
                                     //console.log("attType值为："+attType);
 
                                     var alarmText = "";
-/*                                    if ((mainid < 500 || mainid >= 600) && mainstate == 100) {
+                                    if ((mainid < 500 || mainid >= 600) && mainstate == 100) {
                                         alarmText = "设备号:" + maincode + "<br/> 记录时间:" + json1.SJ + "<br/> 管网主表流量:" + json1.lx_324
                                                 + "<br/> 管网副表流量:" + json1.lx_325 + "<br/> 管网压力:" + json1.lx_326 + "<br/> 管网电瓶电压:" + json1.lx_327
                                                 + "<br/> 电源电压:" + json1.lx_328 + "<br/> 瞬时流量:" + json1.SSLL + "<br><br><strong>以下是报警数值</strong><br>";
@@ -619,7 +621,7 @@
                                             alarmText = "设备号:" + maincode + "<br/> 记录时间:" + json1.SJ + "<br/> ORP:" + json1.lx_332 + "<br/> 电导率:" + json1.lx_333;
                                             //map.infoWindow.setContent("设备号:" + maincode + "<br/> 记录时间:" + json.SJ + "<br/> ORP:" + json.lx_332 + "<br/> 电导率:" + json.lx_333);
                                         }
-                                    };*/
+                                    };
                                     switch (attType) {
                                         case "0":
                                             t0+=alarmText + "正常数值" + json1.XMMC + "等于" + json1.SETVA1 + "<br/>" + "<b><span>报警数值" + json1.XMMC + "等于" + json1.TRVA + "</span></b><br><br>";

@@ -87,11 +87,11 @@ namespace ExtendDLL
                     arrayList.Add(dictionary); //ArrayList集合中添加键值
                 }
                 string str= javaScriptSerializer.Serialize(arrayList);  //返回一个json字符串
-                if (str.Substring(0, 1) == "[")
-                {
-                    str = str.Substring(1);
-                    str = str.Substring(0, str.Length - 1);
-                }
+                //if (str.Substring(0, 1) == "[")
+                //{
+                //    str = str.Substring(1);
+                //    str = str.Substring(0, str.Length - 1);
+                //}
                 return str;
             }
         }
