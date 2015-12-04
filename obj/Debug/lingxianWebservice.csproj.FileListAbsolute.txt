@@ -61,3 +61,4 @@ D:\work\web\DLGIS\lingxianWebservice\bin\.BLL.pdb
 D:\work\web\DLGIS\lingxianWebservice\bin\.Model.pdb
 D:\work\web\DLGIS\lingxianWebservice\bin\.DAL.pdb
 D:\work\web\DLGIS\lingxianWebservice\bin\.DBUtility.pdb
+D:\work\web\DLGIS\lingxianWebservice\obj\Debug\lingxianWebservice.csprojResolveAssemblyReference.cache
