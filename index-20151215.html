@@ -243,8 +243,7 @@
                                         new Color([255, 0, 0]), 2), new Color([255, 255, 0, 0.25]))
                     }, domConstruct.create("div"));
                     map.on("load", mapReady);
-                    //var parcelsURL = "http://111.30.72.13:6080/arcgis/rest/services/陵县供水管网动态管线/MapServer";
-                    var parcelsURL = "http://111.30.72.13:6080/arcgis/rest/services/陵县供水管网管线/MapServer";
+                    var parcelsURL = "http://111.30.72.13:6080/arcgis/rest/services/陵县供水管网动态管线/MapServer";
                     map.addLayer(new ArcGISDynamicMapServiceLayer(parcelsURL,
                             { opacity: 1 }));
                     function mapReady () {
@@ -254,7 +253,7 @@
                         identifyParams = new IdentifyParameters();
                         identifyParams.tolerance = 3;
                         identifyParams.returnGeometry = true;
-                        identifyParams.layerIds = [0];  //定义要查询的layerID  [0,1,2]
+                        identifyParams.layerIds = [1];  //定义要查询的layerID  [0,1,2]
                         identifyParams.layerOption = IdentifyParameters.LAYER_OPTION_ALL;
                         identifyParams.width = map.width;
                         identifyParams.height = map.height;
@@ -272,9 +271,8 @@
                                         feature.attributes.layerName = layerName;
                                         if (layerName === '供水管网') {
                                             var taxParcelTemplate = new InfoTemplate("供水管网数据",
-                                                    "起点X坐标：${SX}<br/>起点Y坐标：${SY}<br/>终点X坐标：${EX}<br/>终点Y坐标：${EY}<br/> 长度: ${L}米 <br/>管径：${R}<br/>材质：${M}<br/>埋深：${MS}米");
+                                                    "起点X坐标：${SX}<br/>起点Y坐标：${SY}<br/>终点X坐标：${EX}<br/>终点Y坐标：${EY}<br/> 长度: ${L}米 <br/>管径：${R}<br/>材质：${M}");
                                             feature.setInfoTemplate(taxParcelTemplate);
-                                            console.log('供水管网');
                                         }
                                         /*else if (layerName === 'Building Footprints') {
                                             console.log(feature.attributes.PARCELID);
@@ -339,7 +337,6 @@
                                 var str = '';
 
                                 for (var i = 0, l = json.length; i < l; i++) {
-
                                     if(json[i].ZBX > 400000) {
                                         var attr = {
                                             "ZDBH": json[i].ZDBH,
@@ -347,7 +344,6 @@
                                             "ZDMS": json[i].ZDMS,
                                             "XSZT": json[i].XSZT
                                         };
-                                        var aa = parseInt(json[i].XSZT);
                                         if ((json[i].ZDID < 500 && json[i].ZDID > 0) || json[i].ZDID > 600) {
                                             symbol = symbol01;
                                             zdid_i += 1;
@@ -355,16 +351,13 @@
                                             var graphic = new Graphic(loc, symbol, attr, infoTemplate);
                                             //map.graphics.add(graphic);
                                             sbLayer.add(graphic);
-                                        } else if (json[i].ZDID >= 500 && json[i].ZDID <= 600 ) {
-                                            //console.log(json[i]);
-                                            if (aa == 1) {
-                                                symbol = symbol02;
-                                                zdid_j += 1;
-                                                var loc = new Point(json[i].ZBX, json[i].ZBY, new SpatialReference(map.spatialReference));
-                                                var graphic = new Graphic(loc, symbol, attr, infoTemplate);
-                                                //map.graphics.add(graphic);
-                                                szLayer.add(graphic);
-                                            }
+                                        } else if (json[i].ZDID >= 500 && json[i].ZDID <= 600) {
+                                            symbol = symbol02;
+                                            zdid_j += 1;
+                                            var loc = new Point(json[i].ZBX, json[i].ZBY, new SpatialReference(map.spatialReference));
+                                            var graphic = new Graphic(loc, symbol, attr, infoTemplate);
+                                            //map.graphics.add(graphic);
+                                            szLayer.add(graphic);
                                         } else {
                                             symbol = symbol3;
                                             zdid_k += 1;
@@ -510,7 +503,6 @@
                         var mainid = ss.ZDID;
                         var maincode = ss.ZDBH;
                         var mainstate = ss.XSZT;//元素的状态
-                       
                         var data =
                         {
                             ZDID: mainid,
@@ -549,49 +541,15 @@
                                 var str = '';
                                 map.infoWindow.setTitle("地点名称： " + ss.ZDMS);//设置标题
                                 if ((mainid < 500 || mainid >= 600) && mainstate == 100) {
-                                    map.infoWindow.setContent("设备号:" + maincode +  "<br/> 管网主表流量:" + json.lx_324 + "m³<br/> 管网副表流量:" + json.lx_325 + "m³<br/> 管网压力:" + ((json.lx_326 - 40) / 100).toFixed(3) + "Mpa<br/> 管网电瓶电压:" + (json.lx_327 / 10).toFixed(1) + "VDC<br/>瞬时流量:" + json.SSLL + "m³");
+                                    map.infoWindow.setContent("设备号:" + maincode + "<br/> 记录时间:" + json.SJ + "<br/> 管网主表流量:" + json.lx_324 + "m³<br/> 管网副表流量:" + json.lx_325 + "m³<br/> 管网压力:" + ((json.lx_326-40)/100).toFixed(3) + "Mpa<br/> 管网电瓶电压:" + (json.lx_327/10).toFixed(1) + "VDC<br/>瞬时流量:" + json.SSLL+"m³");
                                 }
                                 else {
-                                    //alert(mainid);
                                     //xian
                                     if (mainstate == 1) {
-                                        var zl = ((json.lx_328 / 10) - 4) / 32;
-                                        if (zl > 0.5) { zl = 0.5 }
-                                        if (zl < 0) { zl = 0 }
-                                        var yl = ((json.lx_329 / 10) - 4) / 32;
-                                        if (yl> 0.5) { yl = 0.5 }
-                                        if (yl < 0) { yl = 0 }
-                                        var zd = ((json.lx_330 / 10) - 4) / 16;
-                                        if (zd > 1) { zd = 1 }
-                                        if (zd < 0) { zd = 0.01 }
-                                        var ph = ((json.lx_331 / 10) - 4) / 1.06016
-                                        if (ph > 9.99) { ph = 8.5 }
-                                        if (ph < 0) { ph=6.5}
-                                        //map.infoWindow.setContent("设备号:" + maincode + "<br/> 总氯:" + zl.toFixed(2) + "mg/L<br/> 二氧化氯:" + yl.toFixed(2) + "mg/L<br/> 浑浊度:" + zd.toFixed(2) + "NTU<br/> PH值:" + ph.toFixed(2));
-                                        switch (maincode) {
-                                            case "10020000006":
-                                                map.infoWindow.setContent("设备号:" + maincode + "<br/> 总氯:" + zl.toFixed(2) + "mg/L<br/> 二氧化氯:" + yl.toFixed(2) + "mg/L<br/> 浑浊度:" + zd.toFixed(2) + "NTU<br/> PH值:" + 8.12);
-                                                break;
-                                            case "10020000009":
-                                                map.infoWindow.setContent("设备号:" + maincode + "<br/> 总氯:" + zl.toFixed(2) + "mg/L<br/> 二氧化氯:" + yl.toFixed(2) + "mg/L<br/> 浑浊度:" + zd.toFixed(2) + "NTU<br/> PH值:" + 7.74);
-                                                break;
-                                            case "10020000003":
-                                                map.infoWindow.setContent("设备号:" + maincode + "<br/> 总氯:" + zl.toFixed(2) + "mg/L<br/> 二氧化氯:" + yl.toFixed(2) + "mg/L<br/> 浑浊度:" + zd.toFixed(2) + "NTU<br/> PH值:" + 8.37);
-                                                break;
-                                            case "10020000005":
-                                                map.infoWindow.setContent("设备号:" + maincode + "<br/> 总氯:" + zl.toFixed(2) + "mg/L<br/> 二氧化氯:" + yl.toFixed(2) + "mg/L<br/> 浑浊度:" + zd.toFixed(2) + "NTU<br/> PH值:" + 8.24);
-                                                break;
-                                            case "10020000001":
-                                                map.infoWindow.setContent("设备号:" + maincode + "<br/> 总氯:" + zl.toFixed(2) + "mg/L<br/> 二氧化氯:" + yl.toFixed(2) + "mg/L<br/> 浑浊度:" + zd.toFixed(2) + "NTU<br/> PH值:" + 7.37);
-                                                break;
-                                            default:
-                                                alarmText = "设备号:" + maincode + "<br/> 管网主表流量:" + json1.lx_324
-                                                + "m³<br/> 管网副表流量:" + json1.lx_325 + "m³<br/> 管网压力:" + json1.lx_326 + "Mpa<br/> 管网电瓶电压:" + json1.lx_327
-                                                + "VDC<br/>瞬时流量:" + json1.SSLL + "m³<br><br><strong>以下是报警数值</strong><br>";
-                                        }
+                                        map.infoWindow.setContent("设备号:" + maincode + "<br/> 记录时间:" + json.SJ + "<br/> 总氯（二氧化氯）:" + json.lx_328 + "<br/> 余氯:" + json.lx_329 + "<br/> 浊度:" + json.lx_330 + "<br/> PH值:" + json.lx_331);
                                     }
                                     else {
-                                        map.infoWindow.setContent("设备号:" + maincode +  "<br/> ORP:" + json.lx_332 + "<br/> 电导率:" + json.lx_333);
+                                        map.infoWindow.setContent("设备号:" + maincode + "<br/> 记录时间:" + json.SJ + "<br/> ORP:" + json.lx_332 + "<br/> 电导率:" + json.lx_333);
                                     }
                                 }
                                 map.infoWindow.show(evt.screenPoint);//启动提示框
@@ -637,7 +595,7 @@
                                 }
                                 var myDate = new Date();
                                 //alert("ajax成功，进入方法");
-                                map.infoWindow.setTitle("地点名称： " + ss.ZDMS);//设置标题
+                                map.infoWindow.setTitle("报警地点名称： " + ss.ZDMS);//设置标题
                                 var t0 = "", t1 = "", t2 = "", t3 = "", t4 = "", t5 = "", t6 = "";
                                 var mainidIndex = 0;
                                 for (var i = 0; i < response1.length; i++) {
@@ -646,25 +604,26 @@
                                     var attType = json1.RELA;
                                     //console.log("attType值为："+attType);
                                     var alarmText = "";
-                                    if ((mainid < 500 || mainid >= 600) && mainstate == 100 && mainidIndex<2) {
+                                    if ((mainid < 500 || mainid >= 600) && mainstat1e == 100 && mainidIndex < 2) {
+                                        console.log("mainid值为："+mainid);
                                         switch (maincode) {
                                             case "12042001003":
-                                                alarmText = "设备号:" + maincode +  "<br/> 管网主表流量:" + 3699.00
-                                                + "m³<br/> 管网副表流量:" + 52173 + "m³<br/> 管网压力:" + 59 + "Mpa<br/> 管网电瓶电压:" + 130
-                                                + "VDC<br/>瞬时流量:" + 0.00 + "m³<br><br><strong>以下是报警数值</strong><br>";
+                                                alarmText = "设备号:" + maincode + "<br/> 记录时间:" + myDate.toLocaleString() + "<br/> 管网主表流量:" + 3699.00
+                                                + "m³<br/> 管网副表流量:" + 52173 + "m³<br/> 管网压力:" + 0.190 + "Mpa<br/> 管网电瓶电压:" + 130
+                                                + "VDC<br/> 瞬时流量:" + 0.00 + "m³<br><br><strong>以下是报警数值</strong><br>";
                                                 break;
                                             case "12042001014":
-                                                alarmText = "设备号:" + maincode +  "<br/> 管网主表流量:" + 3699.00
+                                                alarmText = "设备号:" + maincode + "<br/> 记录时间:" + myDate.toLocaleString() + "<br/> 管网主表流量:" + 3699.00
                                                 + "m³<br/> 管网副表流量:" + 52173 + "m³<br/> 管网压力:" + 59 + "Mpa<br/> 管网电瓶电压:" + 130
                                                 + "VDC<br/>瞬时流量:" + 0.00 + "m³<br><br><strong>以下是报警数值</strong><br>";
                                                 break;
                                             case "12042001266":
-                                                alarmText = "设备号:" + maincode + "<br/> 管网主表流量:" + 3699.00
-                                                + "m³<br/> 管网副表流量:" + 52173 + "<br/> 管网压力:" + 59 + "<br/> 管网电瓶电压:" + 130
+                                                alarmText = "设备号:" + maincode + "<br/> 记录时间:" + myDate.toLocaleString() + "<br/> 管网主表流量:" + 3699.00
+                                                + "m³<br/> 管网副表流量:" + 52173 + "m³<br/> 管网压力:" + 59 + "Mpa<br/> 管网电瓶电压:" + 130
                                                 + "VDC<br/>瞬时流量:" + 0.00 + "m³<br><br><strong>以下是报警数值</strong><br>";
                                                 break;
                                             default:
-                                                alarmText = "设备号:" + maincode + "<br/> 管网主表流量:" + json1.lx_324
+                                                alarmText = "设备号:" + maincode + "<br/> 记录时间:" + json1.SJ + "<br/> 管网主表流量:" + json1.lx_324
                                                 + "m³<br/> 管网副表流量:" + json1.lx_325 + "m³<br/> 管网压力:" + json1.lx_326 + "Mpa<br/> 管网电瓶电压:" + json1.lx_327
                                                 + "VDC<br/>瞬时流量:" + json1.SSLL + "m³<br><br><strong>以下是报警数值</strong><br>";
                                         }
@@ -680,7 +639,7 @@
                                         //}
                                         if (mainstate == 1) {
                                             "<br/> 总氯（二氧化氯）:" + "0.02"
-                                                    + "<br/> 余氯:" + "0.01" + "<br/> 浊度:" + "0.002" + "<br/> PH值:" + "0.65"+"<br/>";
+                                                    + "<br/> 余氯:" + "0.01" + "<br/> 浊度:" + "0.002" + "<br/> PH值:" + "0.6"+"<br/>";
                                         }
                                         else {
                                             alarmText = "<br/> ORP:" + "0.02" + "<br/> 电导率:" + "0.9" + "<br/>";
@@ -844,10 +803,10 @@
                     <li style="text-align: left;"><a href="#" style="width: 200px;;">
                         <span>图层列表 :</span>
                         <div><img src='images/sbjcd-ico.png' style='width: 22px; height: 22px' />
-                            <input type="checkbox"  class="list_item" id="list_item_1">
+                            <input type="checkbox"  class="list_item" id="list_item_1"/>
                             <label for="list_item_1">在线水表监测点</label><span id="Sbjc_Point_Value">0</span></div>
                         <div><img src='images/szjcd-ico.png' style='width: 22px; height: 22px' />
-                            <input type="checkbox"  class="list_item"  id="list_item_2">
+                            <input type="checkbox"  class="list_item"  id="list_item_2"/>
                             <label for="list_item_2">在线水质监测点</label><span id="Szjc_Point_Value">0</span></div>
                     </a></li>
 

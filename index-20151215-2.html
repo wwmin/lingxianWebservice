@@ -1,0 +1,175 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>管网</title>
+    <link rel="shortcut icon" href="images/favicon.ico" />
+    <link rel="stylesheet" href="http://60.29.110.104/arcgis_js_api/library/3.9/3.9/js/dojo/dijit/themes/claro/claro.css" />
+    <link rel="stylesheet" href="http://60.29.110.104/arcgis_js_api/library/3.9/3.9/js/dojo/dojox/layout/resources/FloatingPane.css" />
+    <link rel="stylesheet" href="http://60.29.110.104/arcgis_js_api/library/3.9/3.9/js/esri/css/esri.css" />
+    <link rel="stylesheet" type="text/css" href="css/sample.css" />
+    <!-- HTML5 Shim 和 Respond.js 用于让 IE8 支持 HTML5元素和媒体查询 -->
+    <!--[if lt IE 9]>
+    <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+    <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
+    <![endif]-->
+    <style>
+        html, body, #mapDiv
+        {
+            padding: 0;
+            margin: 0;
+            width: 100%;
+            height: 100%;
+        }
+        body
+        {
+            background-color: #fff;
+            overflow: hidden;
+            font-family: '微软雅黑';
+        }
+        #HomeButton
+        {
+            position: absolute;
+            top: 95px;
+            left: 20px;
+            z-index: 50;
+        }
+    </style>
+    <!-- 配置dojo环境，parseOnLoad为true 且要此句要放在 v3.3 init.js前面-->
+    <script type="text/javascript">var djConfig = { parseOnLoad: true };</script>
+    <script src="http://60.29.110.104/arcgis_js_api/library/3.9/3.9/init.js"></script>
+    <script type="text/javascript">
+        var map;
+        var iTip;  //鼠标悬停变量
+        require(["dojo/parser","dijit/registry", "dojo/on","dojo/dom","dojo/dnd/Moveable", "esri/geometry/Extent", "esri/Color", "esri/map", "esri/layers/ArcGISTiledMapServiceLayer",
+                    "esri/layers/ArcGISDynamicMapServiceLayer","esri/InfoTemplate","esri/tasks/IdentifyTask","esri/tasks/IdentifyParameters","esri/dijit/Popup",
+                    "esri/geometry/Point", "esri/SpatialReference", "esri/graphic", "esri/layers/GraphicsLayer", "esri/symbols/SimpleMarkerSymbol","esri/symbols/SimpleFillSymbol",
+                    "esri/symbols/SimpleLineSymbol","dojo/_base/array", "dojo/store/JsonRest", "esri/dijit/HomeButton", "esri/dijit/OverviewMap", "esri/dijit/Scalebar","dojo/dom-construct", "dojo/domReady!"],
+                function (parser, registry, on,dom,Moveable,Extent, Color, Map, ArcGISTiledMapServiceLayer,ArcGISDynamicMapServiceLayer,InfoTemplate,
+                          IdentifyTask,IdentifyParameters,Popup,Point, SpatialReference, Graphic,GraphicsLayer,  SimpleMarkerSymbol,SimpleFillSymbol,
+                          SimpleLineSymbol,arrayUtils, JsonRest, HomeButton, OverviewMap, Scalebar,domConstruct) {
+                    var extent = new Extent({
+//                        "xmin": , "ymin": ,
+//                        "xmax": , "ymax": ,
+                        //"spatialReference": { "wkid": 4214 }  //4214  GEOGCS["GCS_Beijing_1954",DATUM["D_Beijing_1954",SPHEROID["Krasovsky_1940",6378245.0,298.3]],PRIMEM["Greenwich",0.0],UNIT["Degree",0.0174532925199433]]
+                    });
+                    map = new Map("mapDiv", {
+                        //extent: extent,
+                        logo: false,
+                        //center: [467424.1525, 4136804.3113],
+                        //zoom: 2,
+                        infoWindow: popup
+                    });
+                    //Home按钮
+                    var home = new HomeButton({
+                        map: map
+                    }, "HomeButton");
+                    home.startup();
+                    //鹰眼
+                    var overviewMapDijit = new OverviewMap({
+                        map: map,  //必要的
+                        attachTo: "bottom-right", //放置位置
+                        color: "#D84E13", //设置颜色
+                        opacity: .40,  //透明度
+                        visible: true,  //初始化可见
+                        width: 250,  //默认值是地图高度的 1/4th
+                        height: 210,  // 默认值是地图高度的 1/4th
+                        //maximizeButton:true,   // 最大化,最小化按钮，默认false
+                        expandFactor: 1.5
+                    });
+                    overviewMapDijit.startup();
+                    var scalebar = new Scalebar({
+                        map: map,
+                        scalebarUnit: "metric",
+                        attachTo: "bottom-left"
+                    });
+                    //管线查询
+                    var identifyTask, identifyParams;  //定义查询变量
+                    var popup = new Popup({
+                        fillSymbol: new SimpleFillSymbol(SimpleFillSymbol.STYLE_SOLID,
+                                new SimpleLineSymbol(SimpleLineSymbol.STYLE_SOLID,
+                                        new Color([255, 0, 0]), 2), new Color([255, 255, 0, 0.25]))
+                    }, domConstruct.create("div"));
+                    map.on("load", mapReady);
+                    var parcelsURL = "http://60.29.110.104:6080/arcgis/rest/services/市政管网/MapServer";
+                    map.addLayer(new ArcGISDynamicMapServiceLayer(parcelsURL,
+                            { opacity: 1 }));
+                    function mapReady () {
+                        map.on("click", executeIdentifyTask);
+                        //create identify tasks and setup parameters
+                        identifyTask = new IdentifyTask(parcelsURL);
+                        identifyParams = new IdentifyParameters();
+                        identifyParams.tolerance = 3;
+                        identifyParams.returnGeometry = true;
+                        identifyParams.layerIds = [44,45,46,47,48];  //定义要查询的layerID  [0,1,2]
+                        identifyParams.layerOption = IdentifyParameters.LAYER_OPTION_ALL;
+                        identifyParams.width = map.width;
+                        identifyParams.height = map.height;
+                    }
+                    function executeIdentifyTask (event) {
+                        identifyParams.geometry = event.mapPoint;
+                        identifyParams.mapExtent = map.extent;
+
+                        var deferred = identifyTask
+                                .execute(identifyParams)
+                                .addCallback(function (response) {
+                                    return arrayUtils.map(response, function (result) {
+                                        var feature = result.feature;
+                                        var layerName = result.layerName;
+                                        feature.attributes.layerName = layerName;
+                                        if (layerName === 'PS_WSJAPP') {
+                                            var ps1 = new InfoTemplate("${ObjName}",
+                                                    "管线类型：${SSNote}<br/>X坐标：${X}<br/>Y坐标：${y}<br/>埋深：${B_DEEP}米<br/>路名：${ROAD_LANE}");
+                                            feature.setInfoTemplate(ps1);
+                                        }
+                                        else if (layerName === 'PS_YBAPP') {
+                                            var ps2 = new InfoTemplate("${ObjName}",
+                                                    "管线类型：${SSNote}<br/>X坐标：${X}<br/>Y坐标：${Y}<br/>埋深：${B_DEEP}米<br/>路名：${ROAD_LANE}");
+                                            feature.setInfoTemplate(ps2);
+                                        }
+                                        else if (layerName=='PS_YSJAPP'){
+                                            var ps3 = new InfoTemplate("${ObjName}",
+                                                    "管线类型：${SSNote}<br/>X坐标：${X}<br/>Y坐标：${Y}<br/>埋深：${B_DEEP}米<br/>路名：${ROAD_LANE}");
+                                            feature.setInfoTemplate(ps3);
+                                        }
+                                        else if (layerName=='PS_WSLIN'){
+                                            var ps4 = new InfoTemplate("${ObjName}",
+                                                    "管线类型：${SSNote}<br/>X坐标：${X}<br/>Y坐标：${Y}<br/>埋深：${B_DEEP}米<br/>路名：${ROAD_LANE}");
+                                            feature.setInfoTemplate(ps4);
+                                        }
+                                        else if (layerName=='PS_YSLIN'){
+                                            var ps5 = new InfoTemplate("${ObjName}",
+                                                    "管线类型：${SSNote}<br/>X坐标：${X}<br/>Y坐标：${Y}<br/>埋深：${B_DEEP}米");
+                                            feature.setInfoTemplate(ps5);
+                                        }
+                                        return feature;
+                                    });
+                                });
+                        map.infoWindow.setFeatures([deferred]);
+                        map.infoWindow.show(event.mapPoint);
+                    }
+
+                    // close the info window when the map is clicked
+                    map.on("click", cleanUp);
+                    // close the info window when esc is pressed
+                    map.on("key-down", function (e) {
+                        if (e.keyCode === 27) {
+                            cleanUp();
+                        }
+                    });
+                    //清除弹框
+                    function cleanUp() {
+                        map.infoWindow.hide();
+                    }
+                }
+        );
+    </script>
+</head>
+<body class="claro">
+    <div data-dojo-type="dijit/layout/BorderContainer" data-dojo-props="design:'headline', gutters:false" style="width: 100%; height: 100%; margin: 0;">
+        <div id="mapDiv" data-dojo-type="dijit/layout/ContentPane" data-dojo-props="region:'center'" style="padding: 0; position: relative; height: 100%;">
+            <div id="HomeButton"></div>
+        </div>
+    </div>
+</body>
+</html>
