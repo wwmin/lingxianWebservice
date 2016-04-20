@@ -129,7 +129,7 @@
             position: absolute;
             right: 0;
             top: 0;
-            width: 57em;
+            width: 65em;
             height: 1em;
             z-index: 40;
             /*background: #ffffff;*/
@@ -781,6 +781,14 @@
                              RemoveGraphics();
                           }
                      });
+
+                    on(dom.byId('btnWatermeterSearch'),"click",function () {
+                        makeSearchBox();
+                    });
+//                    on(dom.byId('btnSearchWater'),"click",function(){
+////                        alert(document.getElementById("txtSearchWater").value);
+//                        console.log("执行查询");
+//                    })
                 }
         );
 
@@ -828,6 +836,52 @@
                 tmp.bringToTop();
             });
         }
+
+        //弹出查询窗口
+        function makeSearchBox(){
+            require(["dojo/request", "dojo/_base/window", "dojo/dom-style", "dojox/layout/FloatingPane"], function (request, win, style, FloatingPane) {
+                var floaterDiv = document.createElement("div");
+                win.body().appendChild(floaterDiv);
+                floaterDiv.appendChild(document.createElement("br"));
+                var textarea = document.createElement("div");
+                textarea.innerHTML = "加载...";
+
+                floaterDiv.appendChild(textarea);
+                var tmp = new FloatingPane({
+                    title: "<b>水表点压力值搜索</b>",
+                    id: "searchWaterMeter",
+                    closeable: true,
+                    resizable: true,
+                    dockable: false,
+                    resizeAxis: 'xy'
+                }, floaterDiv);
+                tmp.startup();
+
+                tmp.resize({
+                    w: 300,
+                    h: 400
+                });
+
+                style.set(tmp.domNode, "top", "100px");
+                style.set(tmp.domNode, "left", "100px");
+                style.set(tmp.domNode, "z-index", "500");
+
+                tmp.show();
+                //请求数据源
+                request("searchDIV.html").then(function (response) {
+                 textarea.innerHTML = response;
+                 },
+                 function (response) {
+                 //alert("出错，原因是" + response);
+                 textarea.innerHTML = '不能找到指定的HTML ';
+                 });
+                //直接获取全局变量当数据源
+//                textarea.innerHTML=alarmString;
+
+                tmp.bringToTop();
+            });
+
+        }
     </script>
 </head>
 <body class="claro">
@@ -851,12 +905,12 @@
                             <input type="checkbox"  class="list_item"  id="list_item_2">
                             <label for="list_item_2">在线水质监测点</label><span id="Szjc_Point_Value">0</span></div>
                     </a></li>
-
                     <li><a href="#">巡检车监控</a></li>
                     <li><a href="#"><span id="btnAlarmHistory">报警历史</span></a></li>
                     <li><a href="#" style="width: auto;" onclick="gifalert();">水源引水示意图</a></li>
                     <li><a href="#">水质监测</a></li>
                     <li><a href="#">水表监测</a></li>
+                    <li><a href="#"><span id="btnWatermeterSearch">水表压力值查询</span></a></li>
                 </ul>
             </div>
             <div id="HomeButton"></div>
