@@ -7,7 +7,9 @@
     <link rel="stylesheet" href="http://111.30.72.13/arcgis_js_api/library/3.9/3.9/js/dojo/dijit/themes/claro/claro.css" />
     <link rel="stylesheet" href="http://111.30.72.13/arcgis_js_api/library/3.9/3.9/js/dojo/dojox/layout/resources/FloatingPane.css" />
     <link rel="stylesheet" href="http://111.30.72.13/arcgis_js_api/library/3.9/3.9/js/esri/css/esri.css" />
+    <link rel="stylesheet" href="css/bootstrap.min.css"/>
     <link rel="stylesheet" type="text/css" href="css/sample.css" />
+    <script src="js/vue.js"  type="text/javascript"></script>
     <!-- HTML5 Shim 和 Respond.js 用于让 IE8 支持 HTML5元素和媒体查询 -->
     <!--[if lt IE 9]>
     <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
@@ -175,14 +177,16 @@
     <script type="text/javascript">var djConfig = { parseOnLoad: true };</script>
     <script src="http://111.30.72.13/arcgis_js_api/library/3.9/3.9/js/dojo/dojo/dnd/Moveable.js"></script>
     <script src="http://111.30.72.13/arcgis_js_api/library/3.9/3.9/init.js"></script>
+
     <script type="text/javascript" src="js/InfoTip.js"></script>
     <script type="text/javascript">
         var json;
-        var symbol1, symbol01, symbol02,symbolAlarm;  //图示符号
+        var symbol1, symbol01, symbol02,symbolAlarm,symbolClockWhite,symbolClockRed;  //图示符号
         var map;
         var iTip;  //鼠标悬停变量
         var zdid_i = 0,zdid_j= 0,zdid_k= 0,zdid_l=0;  //水表点，水质点，其它点个数全局变量
         var alarmString="";
+        var myMinValue,myMaxValue;
         require(["dojo/parser","dijit/registry", "dojo/on","dojo/dom","dojo/dnd/Moveable", "esri/geometry/Extent", "esri/Color", "esri/map", "esri/layers/ArcGISTiledMapServiceLayer",
                     "esri/layers/ArcGISDynamicMapServiceLayer","esri/InfoTemplate","esri/tasks/IdentifyTask","esri/tasks/IdentifyParameters","esri/dijit/Popup",
                     "esri/geometry/Point", "esri/SpatialReference", "esri/graphic", "esri/layers/GraphicsLayer", "esri/symbols/SimpleMarkerSymbol","esri/symbols/SimpleFillSymbol",
@@ -298,6 +302,8 @@
                      map.addLayer(szLayer);
                      alarmLayer=new GraphicsLayer();
                      map.addLayer(alarmLayer);
+                     searchWaterMeterLayer=new GraphicsLayer();
+                    map.addLayer(searchWaterMeterLayer);
                     iTip = new InfoTip("i2Div", "infoTip white", map.position, true);
                     //infoWindow模板
                     var infoTemplate = new InfoTemplate("${didianming}", "${fubiaozhi}", "${guanwangyali}");
@@ -305,7 +311,8 @@
                     symbol01 = new esri.symbol.PictureMarkerSymbol("images/sbjcd-ico.png", 18, 18);
                     symbol02 = new esri.symbol.PictureMarkerSymbol("images/szjcd-ico.png", 18, 18);
                     symbolAlarm= new esri.symbol.PictureMarkerSymbol("images/alarm.png",20,20);
-
+                    symbolClockWhite=new esri.symbol.PictureMarkerSymbol("images/Clock.gif",20,20);
+                    symbolClockRed=new esri.symbol.PictureMarkerSymbol("images/Clock2.gif",20,20);
                     map.on("load", addPointGraphics);
                     map.on("load",addAlarmPointGraphics);  //初始化地图时加载报警点  --报警点为动态点，应该改为手动点击按钮实现加载
                     // close the info window when the map is clicked
@@ -314,6 +321,7 @@
                     map.on("key-down", function (e) {
                         if (e.keyCode === 27) {
                             cleanUp();
+
                         }
                     });
                     //显示地图坐标
@@ -396,6 +404,124 @@
                         szLayer.on("mouse-over", g_onMouseOverHandler);
                         szLayer.on("mouse-out", g_onMouseOutHandler);
                     }
+
+                    //根据查询条件加载水表点
+                    function searchWaterMeterData(minValue,maxValue) {
+                        $.ajax({
+                            type: "GET",
+                            url: "http://222.133.60.178:809/getAllPoints.ashx",//http://222.133.60.178:809/
+                            async: false,
+                            dataType: "jsonp",
+                            jsonp: "callbackparam",
+                            jsonpCallback: "success_jsonpCallback",
+                            success: function (response) {
+                                console.log(response);
+                                var json = response;
+                                var str = '';
+                                for (var i = 0, l = json.length; i < l; i++) {
+                                    if(json[i].ZBX > 400000) {
+                                        var self=this;
+                                        var attr = {
+                                            "ZDBH": json[i].ZDBH,
+                                            "ZDID": json[i].ZDID,
+                                            "ZDMS": json[i].ZDMS,
+                                            "XSZT": json[i].XSZT,
+                                            "ZBX":json[i].ZBX,
+                                            "ZBY":json[i].ZBY
+                                        };
+                                        var aa = parseInt(json[i].XSZT);
+                                        console.log(json[i]);
+                                        var mainid = json[i].ZDID;
+                                        var maincode = json[i].ZDBH;
+                                        var mainstate = json[i].XSZT;//元素的状态
+                                        var mainname=json[i].ZDMS;
+                                        var mainx=json[i].ZBX;
+                                        var mainy=json[i].ZBY;
+                                        if (mainstate == 0) { mainstate = 100; }
+                                        var dataPath = '?ZDID=' + mainid + '&ZDBH=' + maincode + '&XSZT=' + mainstate;
+                                        var ashx = '';
+                                        if ((mainid < 500 || mainid >= 600) && mainstate == 100) {
+                                            ashx = 'http://222.133.60.178:809/getPoint.ashx' + dataPath;//http://222.133.60.178:809/
+                                        }
+                                        else {
+                                            ashx = 'http://222.133.60.178:809/getLine.ashx' + dataPath;//http://222.133.60.178:809/
+                                        }
+                                        //以下用初始点判断
+                                        if(minValue!="" && maxValue!=""){
+                                            if((json[i].FWBH-40)/1000 >minValue && (json[i].FWBH-40)/1000 < maxValue){
+                                                symbol = symbolClockWhite;
+                                                var loc = new Point(mainx, mainy, new SpatialReference(map.spatialReference));
+                                                var graphic = new Graphic(loc, symbol, attr, infoTemplate);
+                                                searchWaterMeterLayer.add(graphic);
+                                            }
+                                        }else if(minValue!=""){
+                                            if((json[i].FWBH-40)/1000 >minValue ){
+                                                symbol = symbolClockWhite;
+                                                var loc = new Point(mainx, mainy, new SpatialReference(map.spatialReference));
+                                                var graphic = new Graphic(loc, symbol, attr, infoTemplate);
+                                                searchWaterMeterLayer.add(graphic);
+                                            }
+                                           }else{
+                                            if((json[i].FWBH-40)/1000 < maxValue){
+                                                symbol = symbolClockWhite;
+                                                var loc = new Point(mainx, mainy, new SpatialReference(map.spatialReference));
+                                                var graphic = new Graphic(loc, symbol, attr, infoTemplate);
+                                                searchWaterMeterLayer.add(graphic);
+                                            }
+                                        }
+
+
+//                                        $.ajax({
+//                                            type: "GET",
+//                                            url: ashx,
+//                                            async: true,
+//                                            dataType: "jsonp",
+//                                            jsonp: "callbackparam",
+//                                            jsonpCallback: "success_jsonpCallback",
+//                                            success: function (response) {
+////                                                console.log(response);
+//                                                if (response.indexOf("error:") > 0) {
+//                                                    map.infoWindow.setTitle("发生错误");//设置标题
+//                                                    map.infoWindow.setContent("错误明细:" + response);
+//                                                    return false;
+//                                                }
+//                                                var json2 = response[0];//jQuery.parseJSON(response);
+//                                                var str = '';
+//                                                map.infoWindow.setTitle("地点名称： " + mainname);//设置标题
+//                                                    //map.infoWindow.setContent("设备号:" + maincode +  "<br/> 管网主表流量:" + json.lx_324 + "m³<br/> 管网副表流量:" + json.lx_325 + "m³<br/> 管网压力:" + ((json.lx_326 - 40) / 100).toFixed(3) + "Mpa<br/> 管网电瓶电压:" + (json.lx_327 / 10).toFixed(1) + "VDC<br/>瞬时流量:" + json.SSLL + "m³");
+////                                                    symbol = symbolClockWhite;
+////                                                    var loc = new Point(mainx, mainy, new SpatialReference(map.spatialReference));
+////                                                    var graphic = new Graphic(loc, symbol, attr, infoTemplate);
+////                                                    searchWaterMeterLayer.add(graphic);
+//                                                    console.log(loc);
+//                                            },
+//                                            error: function (ex) {
+//                                                //alert(ex);
+//                                                //alert('fail');
+////                                                console.warn(ex + "   mainstate: " + mainstate);
+//                                            }
+//                                        });
+//                                        if ((json[i].ZDID < 500 && json[i].ZDID > 0) || json[i].ZDID > 600) {
+//                                            symbol = symbolClockWhite;
+//                                            var loc = new Point(json[i].ZBX, json[i].ZBY, new SpatialReference(map.spatialReference));
+//                                            var graphic = new Graphic(loc, symbol, attr, infoTemplate);
+//                                            searchWaterMeterLayer.add(graphic);
+//                                        }
+                                    }
+                                }
+                            },
+                            error: function (ex) {
+                                alert('fail');
+                            }
+                        });
+                        searchWaterMeterLayer.on("click", g_onMouseClick);
+                        searchWaterMeterLayer.on("mouse-over", g_onMouseOverHandler);
+                        searchWaterMeterLayer.on("mouse-out", g_onMouseOutHandler);
+                        searchWaterMeterLayer.on("click", g_onMouseClick);
+                        searchWaterMeterLayer.on("mouse-over", g_onMouseOverHandler);
+                        searchWaterMeterLayer.on("mouse-out", g_onMouseOutHandler);
+                    }
+
                     //将报警点加入地图中
                     var initAlarmLayer=0;
                     function addAlarmPointGraphics() {
@@ -538,7 +664,7 @@
                             jsonp: "callbackparam",
                             jsonpCallback: "success_jsonpCallback",
                             success: function (response) {
-                                //console.log(response);
+                                console.log(response);
                                 if (response.indexOf("error:") > 0) {
                                     map.infoWindow.setTitle("发生错误");//设置标题
                                     map.infoWindow.setContent("错误明细:" + response);
@@ -755,6 +881,7 @@
                     //清除弹框
                     function cleanUp() {
                         map.infoWindow.hide();
+                        searchWaterMeterLayer.clear();
                     }
                     //将点平移到map正中 (并 缩放到制定map级别)
                     function setMapCenter(evt, level) {
@@ -783,12 +910,28 @@
                      });
 
                     on(dom.byId('btnWatermeterSearch'),"click",function () {
-                        makeSearchBox();
+
                     });
-//                    on(dom.byId('btnSearchWater'),"click",function(){
-////                        alert(document.getElementById("txtSearchWater").value);
-//                        console.log("执行查询");
-//                    })
+
+                    function aa(){
+                        alert("aaaaa");
+                    }
+                    var vueMain = new Vue({
+                        el: "#meta",
+                        data: {
+                            minValue: "0.01",
+                            maxValue:"3"
+                        },
+                        methods: {
+                            search: function () {
+                                var min = this.minValue.trim();
+                                var max=this.maxValue.trim();
+                                console.log(min,max);
+                                cleanUp();
+                                searchWaterMeterData(this.minValue,this.maxValue);
+                            }
+                        }
+                    });
                 }
         );
 
@@ -837,51 +980,6 @@
             });
         }
 
-        //弹出查询窗口
-        function makeSearchBox(){
-            require(["dojo/request", "dojo/_base/window", "dojo/dom-style", "dojox/layout/FloatingPane"], function (request, win, style, FloatingPane) {
-                var floaterDiv = document.createElement("div");
-                win.body().appendChild(floaterDiv);
-                floaterDiv.appendChild(document.createElement("br"));
-                var textarea = document.createElement("div");
-                textarea.innerHTML = "加载...";
-
-                floaterDiv.appendChild(textarea);
-                var tmp = new FloatingPane({
-                    title: "<b>水表点压力值搜索</b>",
-                    id: "searchWaterMeter",
-                    closeable: true,
-                    resizable: true,
-                    dockable: false,
-                    resizeAxis: 'xy'
-                }, floaterDiv);
-                tmp.startup();
-
-                tmp.resize({
-                    w: 300,
-                    h: 400
-                });
-
-                style.set(tmp.domNode, "top", "100px");
-                style.set(tmp.domNode, "left", "100px");
-                style.set(tmp.domNode, "z-index", "500");
-
-                tmp.show();
-                //请求数据源
-                request("searchDIV.html").then(function (response) {
-                 textarea.innerHTML = response;
-                 },
-                 function (response) {
-                 //alert("出错，原因是" + response);
-                 textarea.innerHTML = '不能找到指定的HTML ';
-                 });
-                //直接获取全局变量当数据源
-//                textarea.innerHTML=alarmString;
-
-                tmp.bringToTop();
-            });
-
-        }
     </script>
 </head>
 <body class="claro">
@@ -908,9 +1006,16 @@
                     <li><a href="#">巡检车监控</a></li>
                     <li><a href="#"><span id="btnAlarmHistory">报警历史</span></a></li>
                     <li><a href="#" style="width: auto;" onclick="gifalert();">水源引水示意图</a></li>
-                    <li><a href="#">水质监测</a></li>
-                    <li><a href="#">水表监测</a></li>
+                    <li><a href="#" >水质监测</a></li>
+                    <li><a href="#" >水表监测</a></li>
                     <li><a href="#"><span id="btnWatermeterSearch">水表压力值查询</span></a></li>
+                    <li>
+                        <form class="form-inline">
+                                <input type="text" class="form-control" id="searchMinValue" placeholder="最小值" v-model="minValue">
+                                <input type="text" class="form-control" id="searchMaxValue" placeholder="最大值" v-model="maxValue">
+                            <button type="submit" class="btn btn-default" @click="search">搜索</button>
+                        </form>
+                    </li>
                 </ul>
             </div>
             <div id="HomeButton"></div>
@@ -923,6 +1028,5 @@
             window.open("gif.html","","dialogWidth=840px;dialogHeight=auto;status=no;help=no;");
         }
     </script>
-
 </body>
 </html>
