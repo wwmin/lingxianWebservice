@@ -175,7 +175,7 @@
     <script src="js/json2.js"></script>
     <!-- 配置dojo环境，parseOnLoad为true 且要此句要放在 v3.3 init.js前面-->
     <script type="text/javascript">var djConfig = { parseOnLoad: true };</script>
-    <script src="http://111.30.72.13/arcgis_js_api/library/3.9/3.9/js/dojo/dojo/dnd/Moveable.js"></script>
+    <!--<script src="http://111.30.72.13/arcgis_js_api/library/3.9/3.9/js/dojo/dojo/dnd/Moveable.js"></script>-->
     <script src="http://111.30.72.13/arcgis_js_api/library/3.9/3.9/init.js"></script>
 
     <script type="text/javascript" src="js/InfoTip.js"></script>
@@ -187,11 +187,11 @@
         var zdid_i = 0,zdid_j= 0,zdid_k= 0,zdid_l=0;  //水表点，水质点，其它点个数全局变量
         var alarmString="";
         var myMinValue,myMaxValue;
-        require(["dojo/parser","dijit/registry", "dojo/on","dojo/dom","dojo/dnd/Moveable", "esri/geometry/Extent", "esri/Color", "esri/map", "esri/layers/ArcGISTiledMapServiceLayer",
+        require(["dojo/parser","dijit/registry", "dojo/on","dojo/dom", "esri/geometry/Extent", "esri/Color", "esri/map", "esri/layers/ArcGISTiledMapServiceLayer",
                     "esri/layers/ArcGISDynamicMapServiceLayer","esri/InfoTemplate","esri/tasks/IdentifyTask","esri/tasks/IdentifyParameters","esri/dijit/Popup",
                     "esri/geometry/Point", "esri/SpatialReference", "esri/graphic", "esri/layers/GraphicsLayer", "esri/symbols/SimpleMarkerSymbol","esri/symbols/SimpleFillSymbol",
                     "esri/symbols/SimpleLineSymbol","dojo/_base/array", "dojo/store/JsonRest", "esri/dijit/HomeButton", "esri/dijit/OverviewMap", "esri/dijit/Scalebar","dojo/dom-construct", "dojo/domReady!"],
-                function (parser, registry, on,dom,Moveable,Extent, Color, Map, ArcGISTiledMapServiceLayer,ArcGISDynamicMapServiceLayer,InfoTemplate,
+                function (parser, registry, on,dom,Extent, Color, Map, ArcGISTiledMapServiceLayer,ArcGISDynamicMapServiceLayer,InfoTemplate,
                           IdentifyTask,IdentifyParameters,Popup,Point, SpatialReference, Graphic,GraphicsLayer,  SimpleMarkerSymbol,SimpleFillSymbol,
                           SimpleLineSymbol,arrayUtils, JsonRest, HomeButton, OverviewMap, Scalebar,domConstruct) {
                     //parser.parse(); //与djConfig = { parseOnLoad: true } 重复，目前可以不用设置此项，以后是否会需要，在看
@@ -234,7 +234,7 @@
                         scalebarUnit: "metric",
                         attachTo: "bottom-left"
                     });
-                    var agoServiceURL = "http://111.30.72.13:6080/arcgis/rest/services/陵县供水管网20151108/MapServer";
+                    var agoServiceURL = "http://111.30.72.13:6080/arcgis/rest/services/陵县供水管网201511/MapServer";
                     var agoLayer = new ArcGISTiledMapServiceLayer(agoServiceURL);
                     //底图map
                     map.addLayer(agoLayer);
@@ -410,12 +410,12 @@
                         $.ajax({
                             type: "GET",
                             url: "http://222.133.60.178:809/getAllPoints.ashx",//http://222.133.60.178:809/
-                            async: false,
+                            async: true,
                             dataType: "jsonp",
                             jsonp: "callbackparam",
                             jsonpCallback: "success_jsonpCallback",
                             success: function (response) {
-                                console.log(response);
+//                                console.log(response);
                                 var json = response;
                                 var str = '';
                                 for (var i = 0, l = json.length; i < l; i++) {
@@ -430,7 +430,7 @@
                                             "ZBY":json[i].ZBY
                                         };
                                         var aa = parseInt(json[i].XSZT);
-                                        console.log(json[i]);
+//                                        console.log(json[i]);
                                         var mainid = json[i].ZDID;
                                         var maincode = json[i].ZDBH;
                                         var mainstate = json[i].XSZT;//元素的状态
@@ -446,7 +446,7 @@
                                         else {
                                             ashx = 'http://222.133.60.178:809/getLine.ashx' + dataPath;//http://222.133.60.178:809/
                                         }
-                                        //以下用初始点判断
+                                       /* //以下用初始点判断
                                         if(minValue!="" && maxValue!=""){
                                             if((json[i].FWBH-40)/1000 >minValue && (json[i].FWBH-40)/1000 < maxValue){
                                                 symbol = symbolClockWhite;
@@ -454,32 +454,41 @@
                                                 var graphic = new Graphic(loc, symbol, attr, infoTemplate);
                                                 searchWaterMeterLayer.add(graphic);
                                             }
-                                        }else if(minValue!=""){
+                                        }else if(minValue!="" && maxValue==""){
                                             if((json[i].FWBH-40)/1000 >minValue ){
                                                 symbol = symbolClockWhite;
                                                 var loc = new Point(mainx, mainy, new SpatialReference(map.spatialReference));
                                                 var graphic = new Graphic(loc, symbol, attr, infoTemplate);
                                                 searchWaterMeterLayer.add(graphic);
                                             }
-                                           }else{
+                                           }else if(minValue=="" && maxValue!=""){
                                             if((json[i].FWBH-40)/1000 < maxValue){
                                                 symbol = symbolClockWhite;
                                                 var loc = new Point(mainx, mainy, new SpatialReference(map.spatialReference));
                                                 var graphic = new Graphic(loc, symbol, attr, infoTemplate);
                                                 searchWaterMeterLayer.add(graphic);
                                             }
-                                        }
+                                        }*/
 
-
-//                                        $.ajax({
-//                                            type: "GET",
-//                                            url: ashx,
-//                                            async: true,
-//                                            dataType: "jsonp",
-//                                            jsonp: "callbackparam",
-//                                            jsonpCallback: "success_jsonpCallback",
-//                                            success: function (response) {
-////                                                console.log(response);
+//                                        function success_jsonpCallback(data){
+//                                            var str = '';
+//                                            map.infoWindow.setTitle("地点名称： " + mainname);//设置标题
+//                                            //map.infoWindow.setContent("设备号:" + maincode +  "<br/> 管网主表流量:" + json.lx_324 + "m³<br/> 管网副表流量:" + json.lx_325 + "m³<br/> 管网压力:" + ((json.lx_326 - 40) / 100).toFixed(3) + "Mpa<br/> 管网电瓶电压:" + (json.lx_327 / 10).toFixed(1) + "VDC<br/>瞬时流量:" + json.SSLL + "m³");
+//                                            symbol = symbolClockWhite;
+//                                            var loc = new Point(mainx, mainy, new SpatialReference(map.spatialReference));
+//                                            var graphic = new Graphic(loc, symbol, attr, infoTemplate);
+//                                            searchWaterMeterLayer.add(graphic);
+//                                        }
+                                        $.ajax({
+                                            type: "GET",
+                                            url: ashx,
+                                            async: false,
+                                            dataType: "jsonp",
+                                            jsonp: "callbackparam",
+                                            jsonpCallback: "success_jsonpCallback",
+                                            success: function (response) {
+                                                success_jsonpCallback(response);
+//                                                console.log(response);
 //                                                if (response.indexOf("error:") > 0) {
 //                                                    map.infoWindow.setTitle("发生错误");//设置标题
 //                                                    map.infoWindow.setContent("错误明细:" + response);
@@ -489,18 +498,19 @@
 //                                                var str = '';
 //                                                map.infoWindow.setTitle("地点名称： " + mainname);//设置标题
 //                                                    //map.infoWindow.setContent("设备号:" + maincode +  "<br/> 管网主表流量:" + json.lx_324 + "m³<br/> 管网副表流量:" + json.lx_325 + "m³<br/> 管网压力:" + ((json.lx_326 - 40) / 100).toFixed(3) + "Mpa<br/> 管网电瓶电压:" + (json.lx_327 / 10).toFixed(1) + "VDC<br/>瞬时流量:" + json.SSLL + "m³");
-////                                                    symbol = symbolClockWhite;
-////                                                    var loc = new Point(mainx, mainy, new SpatialReference(map.spatialReference));
-////                                                    var graphic = new Graphic(loc, symbol, attr, infoTemplate);
-////                                                    searchWaterMeterLayer.add(graphic);
-//                                                    console.log(loc);
-//                                            },
-//                                            error: function (ex) {
-//                                                //alert(ex);
-//                                                //alert('fail');
-////                                                console.warn(ex + "   mainstate: " + mainstate);
-//                                            }
-//                                        });
+                                                symbol = symbolClockWhite;
+                                                var loc = new Point(mainx, mainy, new SpatialReference(map.spatialReference));
+                                                var graphic = new Graphic(loc, symbol, attr, infoTemplate);
+                                                searchWaterMeterLayer.add(graphic);
+//                                                console.log(loc);
+                                                console.log(response);
+                                            },
+                                            error: function (ex) {
+                                                //alert(ex);
+                                                //alert('fail');
+//                                                console.warn(ex + "   mainstate: " + mainstate);
+                                            }
+                                        });
 //                                        if ((json[i].ZDID < 500 && json[i].ZDID > 0) || json[i].ZDID > 600) {
 //                                            symbol = symbolClockWhite;
 //                                            var loc = new Point(json[i].ZBX, json[i].ZBY, new SpatialReference(map.spatialReference));
@@ -511,7 +521,8 @@
                                 }
                             },
                             error: function (ex) {
-                                alert('fail');
+//                                alert('fail');
+                                console.log("根据条件查询失败");
                             }
                         });
                         searchWaterMeterLayer.on("click", g_onMouseClick);
@@ -690,7 +701,7 @@
                                         var zd = ((json.lx_330 / 10) - 4) / 16;
                                         if (zd > 1) { zd = 1 }
                                         if (zd < 0) { zd = 0.01 }
-                                        var ph = ((json.lx_331 / 10) - 4) / 1.06016
+                                        var ph = ((json.lx_331 / 10) - 4) / 1.06016;
                                         if (ph > 9.99) { ph = 8.5 }
                                         if (ph < 0) { ph=6.5}
                                         //map.infoWindow.setContent("设备号:" + maincode + "<br/> 总氯:" + zl.toFixed(2) + "mg/L<br/> 二氧化氯:" + yl.toFixed(2) + "mg/L<br/> 浑浊度:" + zd.toFixed(2) + "NTU<br/> PH值:" + ph.toFixed(2));
@@ -909,13 +920,7 @@
                           }
                      });
 
-                    on(dom.byId('btnWatermeterSearch'),"click",function () {
 
-                    });
-
-                    function aa(){
-                        alert("aaaaa");
-                    }
                     var vueMain = new Vue({
                         el: "#meta",
                         data: {
@@ -979,7 +984,10 @@
                 tmp.bringToTop();
             });
         }
-
+        function success_jsonpCallback(data){
+            console.log(data);
+            console.log("进入success_jsonpCallback")
+        }
     </script>
 </head>
 <body class="claro">
@@ -1010,11 +1018,11 @@
                     <li><a href="#" >水表监测</a></li>
                     <li><a href="#"><span id="btnWatermeterSearch">水表压力值查询</span></a></li>
                     <li>
-                        <form class="form-inline">
+                        <div class="form-inline">
                                 <input type="text" class="form-control" id="searchMinValue" placeholder="最小值" v-model="minValue">
                                 <input type="text" class="form-control" id="searchMaxValue" placeholder="最大值" v-model="maxValue">
                             <button type="submit" class="btn btn-default" @click="search">搜索</button>
-                        </form>
+                        </div>
                     </li>
                 </ul>
             </div>
